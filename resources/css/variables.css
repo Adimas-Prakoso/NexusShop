@@ -1,0 +1,107 @@
+/* CSS Variables untuk Theme NexusShop */
+:root {
+  /* Color Palette */
+  --color-background: #ffffff;
+  --color-foreground: #0f172a;
+  --color-card: #f8fafc;
+  --color-card-foreground: #0f172a;
+  --color-popover: #ffffff;
+  --color-popover-foreground: #0f172a;
+  --color-primary: #3b82f6;
+  --color-primary-foreground: #ffffff;
+  --color-secondary: #f1f5f9;
+  --color-secondary-foreground: #0f172a;
+  --color-muted: #f1f5f9;
+  --color-muted-foreground: #64748b;
+  --color-accent: #f1f5f9;
+  --color-accent-foreground: #0f172a;
+  --color-destructive: #ef4444;
+  --color-destructive-foreground: #ffffff;
+  --color-border: #e2e8f0;
+  --color-input: #ffffff;
+  --color-ring: #3b82f6;
+  
+  /* Sidebar Colors */
+  --color-sidebar: #f8fafc;
+  --color-sidebar-foreground: #0f172a;
+  --color-sidebar-primary: #3b82f6;
+  --color-sidebar-primary-foreground: #ffffff;
+  --color-sidebar-accent: #f1f5f9;
+  --color-sidebar-accent-foreground: #0f172a;
+  --color-sidebar-border: #e2e8f0;
+  --color-sidebar-ring: #3b82f6;
+  
+  /* Border Radius */
+  --radius-lg: 1rem;
+  --radius-md: 0.5rem;
+  --radius-sm: 0.25rem;
+}
+
+/* Dark Mode */
+@media (prefers-color-scheme: dark) {
+  :root {
+    --color-background: #0f172a;
+    --color-foreground: #f8fafc;
+    --color-card: #1e293b;
+    --color-card-foreground: #f8fafc;
+    --color-popover: #1e293b;
+    --color-popover-foreground: #f8fafc;
+    --color-primary: #3b82f6;
+    --color-primary-foreground: #ffffff;
+    --color-secondary: #1e293b;
+    --color-secondary-foreground: #f8fafc;
+    --color-muted: #1e293b;
+    --color-muted-foreground: #94a3b8;
+    --color-accent: #1e293b;
+    --color-accent-foreground: #f8fafc;
+    --color-destructive: #ef4444;
+    --color-destructive-foreground: #ffffff;
+    --color-border: #334155;
+    --color-input: #1e293b;
+    --color-ring: #3b82f6;
+    
+    --color-sidebar: #1e293b;
+    --color-sidebar-foreground: #f8fafc;
+    --color-sidebar-primary: #3b82f6;
+    --color-sidebar-primary-foreground: #ffffff;
+    --color-sidebar-accent: #334155;
+    --color-sidebar-accent-foreground: #f8fafc;
+    --color-sidebar-border: #334155;
+    --color-sidebar-ring: #3b82f6;
+  }
+}
+
+/* Smooth Transitions */
+* {
+  transition: color 0.2s ease-in-out, background-color 0.2s ease-in-out, border-color 0.2s ease-in-out;
+}
+
+/* Custom Scrollbar */
+::-webkit-scrollbar {
+  width: 8px;
+}
+
+::-webkit-scrollbar-track {
+  background: var(--color-muted);
+}
+
+::-webkit-scrollbar-thumb {
+  background: var(--color-border);
+  border-radius: var(--radius-md);
+}
+
+::-webkit-scrollbar-thumb:hover {
+  background: var(--color-muted-foreground);
+}
+
+/* Utilities */
+.glass-effect {
+  backdrop-filter: blur(12px);
+  background: rgba(255, 255, 255, 0.8);
+}
+
+@media (prefers-color-scheme: dark) {
+  .glass-effect {
+    background: rgba(15, 23, 42, 0.8);
+  }
+}

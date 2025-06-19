@@ -1,0 +1,160 @@
+<div class="accordion" id="accordionStatus">
+    <div class="accordion-item">
+        <h2 class="accordion-header" id="headingStatusOne">
+            <button
+                class="accordion-button fw-medium"
+                type="button"
+                data-bs-toggle="collapse"
+                data-bs-target="#collapseStatusOne"
+                aria-expanded="true"
+                aria-controls="collapseStatusOne"
+            >
+                Endpoint
+            </button>
+        </h2>
+        <div id="collapseStatusOne" class="accordion-collapse show collapse" aria-labelledby="headingStatusOne" data-bs-parent="#accordionStatus">
+            <div class="accordion-body">
+                <div class="table-responsive">
+                    <table class="table-bordered m-0 table">
+                        <tbody>
+                            <tr>
+                                <th>URL</th>
+                                <td>
+                                    https://api.medanpedia.co.id/status
+                                    <button
+                                        type="button"
+                                        data-clipboard-text="https://api.medanpedia.co.id/status"
+                                        class="btn btn-sm btn-primary bg-gradient btn-copy"
+                                    >
+                                        <i class="fas fa-copy fa-fw"></i>
+                                    </button>
+                                </td>
+                            </tr>
+                            <tr>
+                                <th>Metode</th>
+                                <td>POST</td>
+                            </tr>
+                            <tr>
+                                <th>Respon</th>
+                                <td>JSON</td>
+                            </tr>
+                        </tbody>
+                    </table>
+                </div>
+            </div>
+        </div>
+    </div>
+    <div class="accordion-item">
+        <h2 class="accordion-header" id="headingStatusTwo">
+            <button
+                class="accordion-button fw-medium collapsed"
+                type="button"
+                data-bs-toggle="collapse"
+                data-bs-target="#collapseStatusTwo"
+                aria-expanded="false"
+                aria-controls="collapseStatusTwo"
+            >
+                Body
+            </button>
+        </h2>
+        <div id="collapseStatusTwo" class="accordion-collapse collapse" aria-labelledby="headingStatusTwo" data-bs-parent="#accordionStatus">
+            <div class="accordion-body">
+                <div class="table-responsive">
+                    <table class="table-bordered m-0 table">
+                        <tbody>
+                            <tr>
+                                <th>Parameter</th>
+                                <th>Tipe</th>
+                                <th>Wajib</th>
+                                <th>Keterangan</th>
+                                <th>Contoh Nilai</th>
+                            </tr>
+                            <tr>
+                                <td>api_id</td>
+                                <td>int</td>
+                                <td>Ya</td>
+                                <td>API ID Anda.</td>
+                                <td>11</td>
+                            </tr>
+                            <tr>
+                                <td>api_key</td>
+                                <td>string</td>
+                                <td>Ya</td>
+                                <td>API Key Anda.</td>
+                                <td>cgjzpa-exp9tj-zvwewy-f70u9m-7ujebr</td>
+                            </tr>
+                            <tr>
+                                <td>id</td>
+                                <td>string</td>
+                                <td>Ya</td>
+                                <td>
+                                    ID Pesanan. Jika ingin mengecek lebih dari satu pesanan, pisahkan tiap ID Pesanan dengan koma, maksimal 50 ID
+                                    Pesanan.
+                                </td>
+                                <td>1107</td>
+                            </tr>
+                        </tbody>
+                    </table>
+                </div>
+            </div>
+        </div>
+    </div>
+    <div class="accordion-item">
+        <h2 class="accordion-header" id="headingStatusThree">
+            <button
+                class="accordion-button fw-medium collapsed"
+                type="button"
+                data-bs-toggle="collapse"
+                data-bs-target="#collapseStatusThree"
+                aria-expanded="false"
+                aria-controls="collapseStatusThree"
+            >
+                Contoh Respon
+            </button>
+        </h2>
+        <div id="collapseStatusThree" class="accordion-collapse collapse" aria-labelledby="headingStatusThree" data-bs-parent="#accordionStatus">
+            <div class="accordion-body">
+                <h6 class="text-success">Respon Sukses</h6>
+                <pre>
+{
+    "status": true,
+    "msg": "Pesanan ditemukan.",
+    "data": {
+        "id": 1107,
+        "status": "Processing", // Pending/Processing/Success/Error/Partial
+        "charge": 10000,
+        "start_count": 10,
+        "remains": 90
+    }
+}</pre
+                >
+                <h6 class="text-success">Respon Sukses (Massal)</h6>
+                <pre>
+{
+    "status": true,
+    "msg": "Cek status pesanan massal.",
+    "orders": {
+        "1107": {
+            "msg": "Pesanan ditemukan.",
+            "status": "Processing", // Pending/Processing/Success/Error/Partial
+            "charge": 10000,
+            "start_count": 10,
+            "remains": 90
+        },
+        "1234": {
+            "msg": "Pesanan tidak ditemukan."
+        }
+    }
+}</pre
+                >
+                <h6 class="text-danger">Respon Gagal</h6>
+                <pre>
+{
+    "status": false,
+    "msg": "Pesanan tidak ditemukan."
+}</pre
+                >
+            </div>
+        </div>
+    </div>
+</div>
