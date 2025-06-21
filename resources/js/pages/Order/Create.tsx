@@ -1,18 +1,14 @@
-import React, { useState } from 'react';
+import React from 'react';
+import { Head, Link, useForm } from '@inertiajs/react';
 import { motion } from 'framer-motion';
-import { Head, useForm, Link } from '@inertiajs/react';
 import { 
-    FaArrowLeft, 
     FaShoppingCart, 
-    FaCreditCard,
+    FaEnvelope, 
+    FaGlobe, 
+    FaArrowLeft,
     FaQrcode,
     FaUniversity,
-    FaMobile,
-    FaInfoCircle,
-    FaEnvelope,
-    FaGlobe,
-    FaHashtag,
-    FaUsers
+    FaMobile
 } from 'react-icons/fa';
 
 interface Service {
@@ -29,37 +25,71 @@ interface OrderCreateProps {
 }
 
 const OrderCreate: React.FC<OrderCreateProps> = ({ service }) => {
-    const [selectedPaymentMethod, setSelectedPaymentMethod] = useState<string>('qris');
-    const [totalPrice, setTotalPrice] = useState<number>(0);
-    
-    const { data, setData, post, processing, errors } = useForm({
+    const { data, setData, post, errors, processing } = useForm({
         email: '',
-        service_id: service.id,
-        service_name: service.name,
         target: '',
         quantity: service.min,
-        price: 0,
         payment_method: 'qris',
-        comments: '',
-        usernames: '',
+        service_id: service.id,
+        service_name: service.name,
+        price: service.price,
+        min: service.min,
+        max: service.max,
+        type: service.type,
     });
 
-    // Calculate price based on quantity
-    const calculatePrice = (quantity: number) => {
+    const [selectedPaymentMethod, setSelectedPaymentMethod] = React.useState('qris');
+    const [totalPrice, setTotalPrice] = React.useState(0);
+    const [isSubmitting, setIsSubmitting] = React.useState(false);
+
+    const calculatePrice = React.useCallback((quantity: number) => {
         const price = (quantity / 1000) * service.price;
         setTotalPrice(price);
-        setData('price', price);
         setData('quantity', quantity);
-    };
+    }, [service.price, setData]);
 
     const handleQuantityChange = (e: React.ChangeEvent<HTMLInputElement>) => {
-        const quantity = parseInt(e.target.value) || service.min;
-        calculatePrice(quantity);
+        const quantity = parseInt(e.target.value);
+        if (quantity >= service.min && quantity <= service.max) {
+            calculatePrice(quantity);
+        }
     };
 
     const handleSubmit = (e: React.FormEvent) => {
         e.preventDefault();
-        post('/order/store');
+        
+        if (isSubmitting) return;
+        
+        setIsSubmitting(true);
+        
+        post('/order/store', {
+            onSuccess: (response) => {
+                console.log('Order created successfully, redirecting to payment...');
+                
+                // Check if we got a fallback response
+                if (response && typeof response === 'object' && 'manual_redirect' in response && 'payment_url' in response) {
+                    const fallbackResponse = response as { manual_redirect: boolean; payment_url: string };
+                    console.log('Manual redirect needed to:', fallbackResponse.payment_url);
+                    alert('Order created successfully! Click OK to go to payment page.');
+                    window.location.href = fallbackResponse.payment_url;
+                }
+            },
+            onError: (errors) => {
+                console.error('Order creation failed:', errors);
+                
+                // Show error message
+                if (errors.payment) {
+                    alert('Payment Error: ' + errors.payment);
+                } else if (errors.network) {
+                    alert('Network Error: Please check your internet connection and try again.');
+                } else {
+                    alert('An error occurred while processing your order. Please try again.');
+                }
+            },
+            onFinish: () => {
+                setIsSubmitting(false);
+            }
+        });
     };
 
     const paymentMethods = [
@@ -72,11 +102,11 @@ const OrderCreate: React.FC<OrderCreateProps> = ({ service }) => {
 
     React.useEffect(() => {
         calculatePrice(service.min);
-    }, []);
+    }, [calculatePrice, service.min]);
 
     React.useEffect(() => {
         setData('payment_method', selectedPaymentMethod);
-    }, [selectedPaymentMethod]);
+    }, [selectedPaymentMethod, setData]);
 
     return (
         <>
@@ -210,7 +240,7 @@ const OrderCreate: React.FC<OrderCreateProps> = ({ service }) => {
                                                 value={data.target}
                                                 onChange={(e) => setData('target', e.target.value)}
                                                 className="w-full px-4 py-3 bg-gray-700/50 border border-gray-600 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-blue-500 text-white placeholder-gray-400"
-                                                placeholder="https://instagram.com/username or @username"
+                                                placeholder="https://instagram.com/username"
                                                 required
                                             />
                                             {errors.target && (
@@ -224,10 +254,10 @@ const OrderCreate: React.FC<OrderCreateProps> = ({ service }) => {
                                             </label>
                                             <input
                                                 type="number"
-                                                min={service.min}
-                                                max={service.max}
                                                 value={data.quantity}
                                                 onChange={handleQuantityChange}
+                                                min={service.min}
+                                                max={service.max}
                                                 className="w-full px-4 py-3 bg-gray-700/50 border border-gray-600 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-blue-500 text-white placeholder-gray-400"
                                                 required
                                             />
@@ -236,115 +266,57 @@ const OrderCreate: React.FC<OrderCreateProps> = ({ service }) => {
                                             )}
                                         </div>
                                     </div>
-
-                                    {/* Optional Fields */}
-                                    {service.type === 'Custom Comments' && (
-                                        <div className="mt-4">
-                                            <label className="block text-gray-300 text-sm font-medium mb-2">
-                                                Comments (one per line)
-                                            </label>
-                                            <textarea
-                                                value={data.comments}
-                                                onChange={(e) => setData('comments', e.target.value)}
-                                                rows={4}
-                                                className="w-full px-4 py-3 bg-gray-700/50 border border-gray-600 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-blue-500 text-white placeholder-gray-400"
-                                                placeholder="Comment 1&#10;Comment 2&#10;Comment 3"
-                                            />
-                                        </div>
-                                    )}
-
-                                    {service.type === 'Mentions Custom List' && (
-                                        <div className="mt-4">
-                                            <label className="block text-gray-300 text-sm font-medium mb-2">
-                                                Usernames (one per line)
-                                            </label>
-                                            <textarea
-                                                value={data.usernames}
-                                                onChange={(e) => setData('usernames', e.target.value)}
-                                                rows={4}
-                                                className="w-full px-4 py-3 bg-gray-700/50 border border-gray-600 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-blue-500 text-white placeholder-gray-400"
-                                                placeholder="username1&#10;username2&#10;username3"
-                                            />
-                                        </div>
-                                    )}
                                 </div>
 
                                 {/* Payment Method */}
                                 <div className="bg-gray-800/50 backdrop-blur-sm rounded-xl p-6 border border-gray-700/50">
                                     <h2 className="text-xl font-semibold mb-4 flex items-center">
-                                        <FaCreditCard className="mr-2 text-blue-400" />
+                                        <FaQrcode className="mr-2 text-blue-400" />
                                         Payment Method
                                     </h2>
                                     
-                                    <div className="grid md:grid-cols-2 lg:grid-cols-3 gap-3">
+                                    <div className="grid md:grid-cols-2 lg:grid-cols-3 gap-4">
                                         {paymentMethods.map((method) => (
-                                            <motion.div
+                                            <div
                                                 key={method.id}
-                                                whileHover={{ scale: 1.02 }}
-                                                whileTap={{ scale: 0.98 }}
-                                                className={`relative p-4 rounded-lg border-2 cursor-pointer transition-all ${
+                                                className={`p-4 rounded-lg border-2 cursor-pointer transition-all ${
                                                     selectedPaymentMethod === method.id
-                                                        ? 'border-blue-500 bg-blue-900/30'
+                                                        ? 'border-blue-500 bg-blue-500/10'
                                                         : 'border-gray-600 bg-gray-700/30 hover:border-gray-500'
                                                 }`}
                                                 onClick={() => setSelectedPaymentMethod(method.id)}
                                             >
                                                 <div className="flex items-center space-x-3">
-                                                    <method.icon className={`text-xl ${
-                                                        selectedPaymentMethod === method.id ? 'text-blue-400' : 'text-gray-400'
-                                                    }`} />
+                                                    <method.icon className="text-2xl text-blue-400" />
                                                     <div>
-                                                        <p className="font-medium">{method.name}</p>
-                                                        <p className="text-xs text-gray-400">{method.description}</p>
+                                                        <h3 className="font-semibold text-white">{method.name}</h3>
+                                                        <p className="text-sm text-gray-400">{method.description}</p>
                                                     </div>
                                                 </div>
-                                                
-                                                {selectedPaymentMethod === method.id && (
-                                                    <div className="absolute top-2 right-2 w-3 h-3 bg-blue-500 rounded-full"></div>
-                                                )}
-                                            </motion.div>
+                                            </div>
                                         ))}
                                     </div>
                                 </div>
 
                                 {/* Submit Button */}
-                                <motion.button
-                                    type="submit"
-                                    disabled={processing}
-                                    whileHover={{ scale: 1.02 }}
-                                    whileTap={{ scale: 0.98 }}
-                                    className="w-full py-4 bg-gradient-to-r from-blue-600 to-purple-600 hover:from-blue-700 hover:to-purple-700 disabled:from-gray-600 disabled:to-gray-700 text-white rounded-lg font-medium transition-all duration-300 flex items-center justify-center space-x-2 relative overflow-hidden group"
-                                >
-                                    <div className="absolute inset-0 bg-gradient-to-r from-blue-400 to-purple-400 opacity-0 group-hover:opacity-20 transition-opacity duration-300"></div>
-                                    {processing ? (
-                                        <>
-                                            <div className="animate-spin w-5 h-5 border-2 border-white border-t-transparent rounded-full"></div>
-                                            <span>Processing...</span>
-                                        </>
-                                    ) : (
-                                        <>
-                                            <FaShoppingCart className="relative z-10" />
-                                            <span className="relative z-10">
-                                                Proceed to Payment - Rp {totalPrice.toLocaleString('id-ID')}
-                                            </span>
-                                        </>
-                                    )}
-                                </motion.button>
-
-                                {/* Info */}
-                                <div className="bg-blue-900/20 border border-blue-500/30 rounded-lg p-4">
-                                    <div className="flex items-start space-x-3">
-                                        <FaInfoCircle className="text-blue-400 mt-1 flex-shrink-0" />
-                                        <div className="text-sm text-gray-300">
-                                            <p className="font-medium mb-1">Important Information:</p>
-                                            <ul className="space-y-1 text-xs">
-                                                <li>• Orders will be processed within 0-24 hours after payment confirmation</li>
-                                                <li>• Make sure your account/profile is public for better results</li>
-                                                <li>• Refill guarantee available for applicable services</li>
-                                                <li>• Contact support if you have any questions</li>
-                                            </ul>
-                                        </div>
-                                    </div>
+                                <div className="flex justify-end">
+                                    <button
+                                        type="submit"
+                                        disabled={isSubmitting || processing}
+                                        className="flex items-center space-x-2 px-8 py-4 bg-gradient-to-r from-blue-600 to-purple-600 hover:from-blue-700 hover:to-purple-700 disabled:opacity-50 disabled:cursor-not-allowed rounded-lg font-semibold text-white transition-all duration-200 transform hover:scale-105"
+                                    >
+                                        {isSubmitting || processing ? (
+                                            <>
+                                                <div className="animate-spin w-5 h-5 border-2 border-white border-t-transparent rounded-full"></div>
+                                                <span>Processing...</span>
+                                            </>
+                                        ) : (
+                                            <>
+                                                <FaShoppingCart />
+                                                <span>Proceed to Payment - Rp {totalPrice.toLocaleString('id-ID')}</span>
+                                            </>
+                                        )}
+                                    </button>
                                 </div>
                             </form>
                         </motion.div>

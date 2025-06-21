@@ -41,12 +41,6 @@ return [
     ],
 
     'midtrans' => [
-        'server_key' => env('MIDTRANS_SANDBOX', true) 
-            ? env('SANDBOX_MIDTRANS_SERVER_KEY') 
-            : env('MIDTRANS_SERVER_KEY'),
-        'client_key' => env('MIDTRANS_SANDBOX', true) 
-            ? env('SANDBOX_MIDTRANS_CLIENT_KEY') 
-            : env('MIDTRANS_CLIENT_KEY'),
         'sandbox_server_key' => env('SANDBOX_MIDTRANS_SERVER_KEY'),
         'sandbox_client_key' => env('SANDBOX_MIDTRANS_CLIENT_KEY'),
         'production_server_key' => env('MIDTRANS_SERVER_KEY'),

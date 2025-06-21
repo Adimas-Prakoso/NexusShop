@@ -38,26 +38,32 @@ class HandleInertiaRequests extends Middleware
      */
     public function share(Request $request): array
     {
-        [$message, $author] = str(Inspiring::quotes()->random())->explode('-');
-
-        return [
-            ...parent::share($request),
+        return array_merge(parent::share($request), [
             'name' => config('app.name'),
-            'quote' => ['message' => trim($message), 'author' => trim($author)],
+            'quote' => fn() => str($this->getRandomQuote())->explode('-')->pipe(fn($parts) => ['message' => trim($parts[0]), 'author' => trim($parts[1])]),
             'auth' => [
-                'user' => $request->user(),
-                'admin' => $request->user('admin'), // Add admin guard
-                'isAdmin' => Auth::guard('admin')->check(), // Add admin check
+                'user' => fn() => $request->user() ? [
+                    'id' => $request->user()->id,
+                    'name' => $request->user()->name,
+                    'email' => $request->user()->email,
+                ] : null,
+                'admin' => fn() => $request->user('admin'),
+                'isAdmin' => fn() => Auth::guard('admin')->check(),
             ],
             'flash' => [
-                'success' => $request->session()->get('success'),
-                'error' => $request->session()->get('error'),
+                'message' => fn() => $request->session()->get('message'),
+                'error' => fn() => $request->session()->get('error'),
             ],
             'ziggy' => fn (): array => [
                 ...(new Ziggy)->toArray(),
                 'location' => $request->url(),
             ],
             'sidebarOpen' => ! $request->hasCookie('sidebar_state') || $request->cookie('sidebar_state') === 'true',
-        ];
+        ]);
+    }
+
+    private function getRandomQuote(): string
+    {
+        return Inspiring::quotes()->random();
     }
 }

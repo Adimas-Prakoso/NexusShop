@@ -1,0 +1,70 @@
+/* Critical CSS for initial render - this will be inlined in HTML */
+
+/* Base styles */
+* {
+    box-sizing: border-box;
+}
+
+html {
+    background-color: oklch(1 0 0);
+    font-family: 'Instrument Sans', sans-serif;
+}
+
+html.dark {
+    background-color: oklch(0.145 0 0);
+}
+
+body {
+    margin: 0;
+    padding: 0;
+    font-family: 'Instrument Sans', sans-serif;
+    -webkit-font-smoothing: antialiased;
+    -moz-osx-font-smoothing: grayscale;
+}
+
+/* Loading spinner */
+.loading-spinner {
+    position: fixed;
+    top: 50%;
+    left: 50%;
+    transform: translate(-50%, -50%);
+    width: 40px;
+    height: 40px;
+    border: 4px solid #f3f3f3;
+    border-top: 4px solid #3498db;
+    border-radius: 50%;
+    animation: spin 1s linear infinite;
+    z-index: 9999;
+}
+
+@keyframes spin {
+    0% { transform: translate(-50%, -50%) rotate(0deg); }
+    100% { transform: translate(-50%, -50%) rotate(360deg); }
+}
+
+/* Basic layout utilities */
+.flex { display: flex; }
+.hidden { display: none; }
+.block { display: block; }
+.relative { position: relative; }
+.absolute { position: absolute; }
+.fixed { position: fixed; }
+.w-full { width: 100%; }
+.h-full { height: 100%; }
+.min-h-screen { min-height: 100vh; }
+
+/* Basic spacing */
+.p-0 { padding: 0; }
+.m-0 { margin: 0; }
+
+/* Basic colors */
+.text-white { color: white; }
+.text-black { color: black; }
+.bg-white { background-color: white; }
+.bg-black { background-color: black; }
+
+/* Dark mode support */
+.dark .text-white { color: black; }
+.dark .text-black { color: white; }
+.dark .bg-white { background-color: black; }
+.dark .bg-black { background-color: white; } 

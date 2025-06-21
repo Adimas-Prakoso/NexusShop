@@ -1,8 +1,11 @@
 <?php
 
 use App\Http\Middleware\AdminAuth;
+use App\Http\Middleware\CacheStaticAssets;
+use App\Http\Middleware\ForceHttps;
 use App\Http\Middleware\HandleAppearance;
 use App\Http\Middleware\HandleInertiaRequests;
+use App\Http\Middleware\SeoMiddleware;
 use Illuminate\Foundation\Application;
 use Illuminate\Foundation\Configuration\Exceptions;
 use Illuminate\Foundation\Configuration\Middleware;
@@ -26,7 +29,12 @@ return Application::configure(basePath: dirname(__DIR__))
             HandleAppearance::class,
             HandleInertiaRequests::class,
             AddLinkHeadersForPreloadedAssets::class,
+            SeoMiddleware::class,
         ]);
+
+        // Add global middleware for static asset caching and HTTPS
+        $middleware->append(CacheStaticAssets::class);
+        $middleware->prepend(ForceHttps::class);
     })
     ->withExceptions(function (Exceptions $exceptions) {
         //

@@ -110,7 +110,7 @@ class DemoOrderSystem extends Command
             ]);
 
             $paymentId = 'DEMO-PAY-' . strtoupper(Str::random(8));
-            $midtransOrderId = 'DEMO-MT-' . $order->id . '-' . time();
+            $midtransOrderId = 'DEMO-NXS-' . $order->id . '-' . time();
 
             $payment = Payment::create([
                 'order_id' => $order->id,

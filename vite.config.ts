@@ -33,6 +33,7 @@ export default defineConfig({
     ],
     esbuild: {
         jsx: 'automatic',
+        drop: ['console', 'debugger'], // Remove console logs in production
     },
     resolve: {
         alias: {
@@ -52,6 +53,13 @@ export default defineConfig({
         emptyOutDir: true,
         manifest: true,
         chunkSizeWarningLimit: 1000, // Increase threshold to 1MB
+        minify: 'terser', // Use terser for better minification
+        terserOptions: {
+            compress: {
+                drop_console: true,
+                drop_debugger: true,
+            },
+        },
         rollupOptions: {
             input: {
                 app: 'resources/js/app.tsx',
@@ -111,5 +119,16 @@ export default defineConfig({
                 assetFileNames: 'assets/[name]-[hash].[ext]'
             }
         }
+    },
+    optimizeDeps: {
+        include: [
+            'react',
+            'react-dom',
+            '@inertiajs/react',
+            'lucide-react',
+            'clsx',
+            'tailwind-merge'
+        ],
+        exclude: ['three'] // Exclude three.js from pre-bundling as it's heavy
     }
 });

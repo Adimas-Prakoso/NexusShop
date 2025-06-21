@@ -30,6 +30,7 @@ interface Order {
     medanpedia_order_id?: string;
     start_count?: number;
     remains?: number;
+    medanpedia_response?: any;
     created_at: string;
     updated_at: string;
 }
@@ -44,12 +45,22 @@ interface Payment {
     transaction_id?: string;
 }
 
+interface MedanpediaStatus {
+    success: boolean;
+    status?: string;
+    charge?: number;
+    start_count?: number;
+    remains?: number;
+    message?: string;
+}
+
 interface OrderStatusProps {
     order: Order;
     payment: Payment;
+    medanpedia_status?: MedanpediaStatus;
 }
 
-const OrderStatus: React.FC<OrderStatusProps> = ({ order, payment }) => {
+const OrderStatus: React.FC<OrderStatusProps> = ({ order, payment, medanpedia_status }) => {
     const [orderStatus, setOrderStatus] = useState(order.status);
     const [checking, setChecking] = useState(false);
     const [progress, setProgress] = useState(0);
@@ -65,6 +76,12 @@ const OrderStatus: React.FC<OrderStatusProps> = ({ order, payment }) => {
                 
                 // Update progress based on status
                 updateProgress(data.order.status);
+                
+                // Update Medanpedia status if available
+                if (data.medanpedia_status) {
+                    // You can add state for medanpedia status if needed
+                    console.log('Medanpedia status:', data.medanpedia_status);
+                }
             } catch (error) {
                 console.error('Error checking status:', error);
             } finally {
@@ -350,10 +367,91 @@ const OrderStatus: React.FC<OrderStatusProps> = ({ order, payment }) => {
                                             </div>
                                         )}
                                         
-                                        {order.remains !== null && (
+                                        {order.remains !== null && order.remains !== undefined && (
                                             <div className="text-center p-4 bg-orange-900/20 rounded-lg">
                                                 <p className="text-2xl font-bold text-orange-400">{order.remains.toLocaleString('id-ID')}</p>
                                                 <p className="text-gray-300 text-sm">Remaining</p>
+                                            </div>
+                                        )}
+                                    </div>
+                                </div>
+                            )}
+
+                            {/* Medanpedia API Status */}
+                            {medanpedia_status && (
+                                <div className="bg-gray-800/50 backdrop-blur-sm rounded-xl p-6 border border-gray-700/50">
+                                    <h3 className="text-lg font-semibold mb-4 flex items-center">
+                                        <FaInfoCircle className="mr-2 text-purple-400" />
+                                        Provider Status
+                                    </h3>
+                                    
+                                    <div className="space-y-4">
+                                        <div className="flex justify-between items-center">
+                                            <span className="text-gray-300">API Status:</span>
+                                            <div className="flex items-center space-x-2">
+                                                {medanpedia_status.success ? (
+                                                    <FaCheckCircle className="text-green-500" />
+                                                ) : (
+                                                    <FaTimesCircle className="text-red-500" />
+                                                )}
+                                                <span className={`font-medium ${
+                                                    medanpedia_status.success ? 'text-green-500' : 'text-red-500'
+                                                }`}>
+                                                    {medanpedia_status.success ? 'Connected' : 'Failed'}
+                                                </span>
+                                            </div>
+                                        </div>
+                                        
+                                        {medanpedia_status.success && (
+                                            <>
+                                                <div className="flex justify-between">
+                                                    <span className="text-gray-300">Provider Status:</span>
+                                                    <span className={`font-medium capitalize ${
+                                                        medanpedia_status.status === 'success' ? 'text-green-500' :
+                                                        medanpedia_status.status === 'processing' ? 'text-blue-500' :
+                                                        medanpedia_status.status === 'pending' ? 'text-yellow-500' :
+                                                        medanpedia_status.status === 'error' ? 'text-red-500' :
+                                                        medanpedia_status.status === 'partial' ? 'text-orange-500' :
+                                                        'text-gray-500'
+                                                    }`}>
+                                                        {medanpedia_status.status}
+                                                    </span>
+                                                </div>
+                                                
+                                                {medanpedia_status.charge && (
+                                                    <div className="flex justify-between">
+                                                        <span className="text-gray-300">Charge:</span>
+                                                        <span className="text-white font-medium">
+                                                            {medanpedia_status.charge.toLocaleString('id-ID')}
+                                                        </span>
+                                                    </div>
+                                                )}
+                                                
+                                                {medanpedia_status.start_count !== undefined && (
+                                                    <div className="flex justify-between">
+                                                        <span className="text-gray-300">Start Count:</span>
+                                                        <span className="text-white font-medium">
+                                                            {medanpedia_status.start_count.toLocaleString('id-ID')}
+                                                        </span>
+                                                    </div>
+                                                )}
+                                                
+                                                {medanpedia_status.remains !== undefined && (
+                                                    <div className="flex justify-between">
+                                                        <span className="text-gray-300">Remaining:</span>
+                                                        <span className="text-white font-medium">
+                                                            {medanpedia_status.remains.toLocaleString('id-ID')}
+                                                        </span>
+                                                    </div>
+                                                )}
+                                            </>
+                                        )}
+                                        
+                                        {medanpedia_status.message && (
+                                            <div className="mt-4 p-3 bg-gray-700/50 rounded-lg">
+                                                <p className="text-sm text-gray-300">
+                                                    <span className="font-medium">Message:</span> {medanpedia_status.message}
+                                                </p>
                                             </div>
                                         )}
                                     </div>

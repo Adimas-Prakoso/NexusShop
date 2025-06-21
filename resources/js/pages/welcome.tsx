@@ -22,10 +22,21 @@ import {
 } from 'react-icons/fa';
 import { MdEmail, MdPhone } from 'react-icons/md';
 import { GiPistolGun, GiSwordAltar } from 'react-icons/gi';
+import UserDropdown from '@/components/UserDropdown';
+import { Button } from '@/components/ui/button';
 
 interface LoadingProgressEvent {
   loaded: number;
   total: number;
+}
+
+interface Props {
+  auth: {
+    user: {
+      name: string;
+      email: string;
+    } | null;
+  };
 }
 
 // Language translations
@@ -326,7 +337,7 @@ const translations = {
     }
 };
 
-const Welcome = () => {
+const Welcome = ({ auth }: Props) => {
     const mountRef = useRef<HTMLDivElement>(null);
     const [isScrolled, setIsScrolled] = useState(false);
     const [isModelLoaded, setIsModelLoaded] = useState(false);
@@ -706,54 +717,54 @@ const Welcome = () => {
                 </script>
             </Head>
 
-            {/* Hero Section with 3D Background */}
-            <div className="hero-section relative h-screen flex items-center justify-center overflow-hidden">
-                {/* 3D Background Canvas */}
-                <div 
-                    ref={mountRef} 
-                    className="absolute inset-0 z-0"
-                />
-                
-                {/* Content Overlay */}
-                <div className="container mx-auto px-4 sm:px-6 lg:px-8 z-10 relative text-center">
-                    <motion.div
-                        initial={{ opacity: 0, y: 50 }}
-                        animate={{ opacity: 1, y: 0 }}
-                        transition={{ duration: 0.8 }}
-                    >
-                        <h1 className="text-4xl sm:text-5xl md:text-6xl lg:text-7xl font-bold text-white mb-4 drop-shadow-lg">
-                            {t.hero.title}
-                        </h1>
-                        <p className="text-lg sm:text-xl md:text-2xl text-white/90 mb-8 max-w-4xl mx-auto drop-shadow-md px-4">
-                            {t.hero.subtitle}
-                        </p>
-                        <div className="mt-10 flex items-center justify-center gap-x-6">
-                            <Link
-                                href="/products"
-                                className="group relative overflow-hidden rounded-lg bg-gradient-to-r from-blue-600 via-purple-600 to-indigo-600 px-8 py-4 text-base md:text-lg font-medium text-white shadow-lg transition-all duration-300 hover:scale-105 hover:shadow-indigo-500/30 focus:outline-none"
-                                aria-label={currentLanguage === 'en' ? 'Start topping up your games and mobile credit now' : 'Mulai top-up game dan pulsa Anda sekarang'}
-                            >
-                                <span className="relative z-10 flex items-center justify-center">
-                                    <FaRocket className="mr-3 h-6 w-6 animate-pulse" />
-                                    {t.hero.topup}
-                                </span>
-                                <span className="absolute -top-10 -right-10 h-32 w-32 rounded-full bg-white/20 blur-xl group-hover:bg-white/30 transition-all duration-700"></span>
-                                <span className="absolute -bottom-10 -left-10 h-32 w-32 rounded-full bg-white/20 blur-xl group-hover:bg-white/30 transition-all duration-700"></span>
-                                <span className="absolute inset-0 h-full w-full bg-gradient-to-r from-[#2e4aff]/20 via-[#a537fd]/20 to-[#2e4aff]/20 opacity-0 group-hover:opacity-100 transition-opacity duration-700"></span>
-                                <span className="absolute h-full w-full animate-[spin_4s_linear_infinite] bg-[conic-gradient(from_0_at_50%_50%,rgba(0,0,0,0)_0deg,rgba(255,255,255,0.3)_60deg,rgba(0,0,0,0)_120deg)]"></span>
-                            </Link>
-                        </div>
-                    </motion.div>
-                </div>
-
-                {/* Model loading indicator */}
-                {!isModelLoaded && (
-                    <div className="absolute inset-0 flex items-center justify-center z-10 pointer-events-none">
-                        <div className="bg-black/30 backdrop-blur-sm p-4 rounded-lg mx-4">
-                            <p className="text-white text-base sm:text-lg">{t.loading}</p>
-                        </div>
+                {/* Hero Section with 3D Background */}
+                <div className="hero-section relative h-screen flex items-center justify-center overflow-hidden">
+                    {/* 3D Background Canvas */}
+                    <div 
+                        ref={mountRef} 
+                        className="absolute inset-0 z-0"
+                    />
+                    
+                    {/* Content Overlay */}
+                    <div className="container mx-auto px-4 sm:px-6 lg:px-8 z-10 relative text-center">
+                        <motion.div
+                            initial={{ opacity: 0, y: 50 }}
+                            animate={{ opacity: 1, y: 0 }}
+                            transition={{ duration: 0.8 }}
+                        >
+                            <h1 className="text-4xl sm:text-5xl md:text-6xl lg:text-7xl font-bold text-white mb-4 drop-shadow-lg">
+                                {t.hero.title}
+                            </h1>
+                            <p className="text-lg sm:text-xl md:text-2xl text-white/90 mb-8 max-w-4xl mx-auto drop-shadow-md px-4">
+                                {t.hero.subtitle}
+                            </p>
+                            <div className="mt-10 flex items-center justify-center gap-x-6">
+                                <Link
+                                    href="/products"
+                                    className="group relative overflow-hidden rounded-lg bg-gradient-to-r from-blue-600 via-purple-600 to-indigo-600 px-8 py-4 text-base md:text-lg font-medium text-white shadow-lg transition-all duration-300 hover:scale-105 hover:shadow-indigo-500/30 focus:outline-none"
+                                    aria-label={currentLanguage === 'en' ? 'Start topping up your games and mobile credit now' : 'Mulai top-up game dan pulsa Anda sekarang'}
+                                >
+                                    <span className="relative z-10 flex items-center justify-center">
+                                        <FaRocket className="mr-3 h-6 w-6 animate-pulse" />
+                                        {t.hero.topup}
+                                    </span>
+                                    <span className="absolute -top-10 -right-10 h-32 w-32 rounded-full bg-white/20 blur-xl group-hover:bg-white/30 transition-all duration-700"></span>
+                                    <span className="absolute -bottom-10 -left-10 h-32 w-32 rounded-full bg-white/20 blur-xl group-hover:bg-white/30 transition-all duration-700"></span>
+                                    <span className="absolute inset-0 h-full w-full bg-gradient-to-r from-[#2e4aff]/20 via-[#a537fd]/20 to-[#2e4aff]/20 opacity-0 group-hover:opacity-100 transition-opacity duration-700"></span>
+                                    <span className="absolute h-full w-full animate-[spin_4s_linear_infinite] bg-[conic-gradient(from_0_at_50%_50%,rgba(0,0,0,0)_0deg,rgba(255,255,255,0.3)_60deg,rgba(0,0,0,0)_120deg)]"></span>
+                                </Link>
+                            </div>
+                        </motion.div>
                     </div>
-                )}
+
+                    {/* Model loading indicator */}
+                    {!isModelLoaded && (
+                        <div className="absolute inset-0 flex items-center justify-center z-10 pointer-events-none">
+                            <div className="bg-black/30 backdrop-blur-sm p-4 rounded-lg mx-4">
+                                <p className="text-white text-base sm:text-lg">{t.loading}</p>
+                            </div>
+                        </div>
+                    )}
 
                 {/* Sticky Navbar */}
                 <nav className={`fixed top-0 left-0 w-full py-4 sm:py-6 z-50 transition-all duration-300 ${
@@ -825,9 +836,15 @@ const Welcome = () => {
                                 )}
                             </div>
                             
-                            <button className="bg-white text-emerald-600 px-4 py-2 rounded-full hover:bg-emerald-50 transition-colors text-sm xl:text-base">
-                                {t.navbar.login}
-                            </button>
+                            {auth.user ? (
+                                <UserDropdown user={auth.user} />
+                            ) : (
+                                <Button asChild>
+                                    <Link href="/login">
+                                        {t.navbar.login}
+                                    </Link>
+                                </Button>
+                            )}
                         </motion.div>
 
                         {/* Mobile Menu Button */}
@@ -890,26 +907,35 @@ const Welcome = () => {
                                 </div>
                             </div>
                             
-                            <button className="w-full bg-white text-emerald-600 px-4 py-2 rounded-full hover:bg-emerald-50 transition-colors">
-                                {t.navbar.login}
-                            </button>
+                            {auth.user ? (
+                                <div className="px-3 py-2">
+                                    <UserDropdown user={auth.user} />
+                                </div>
+                            ) : (
+                                <Link
+                                    href="/login"
+                                    className="block px-3 py-2 rounded-md text-base font-medium text-gray-700 hover:text-gray-900 hover:bg-gray-50"
+                                >
+                                    {t.navbar.login}
+                                </Link>
+                            )}
                         </div>
                     </motion.div>
                 </nav>
 
-                {/* Scroll indicator */}
-                <motion.div 
-                    className="absolute bottom-4 sm:bottom-8 left-1/2 transform -translate-x-1/2 z-10"
-                    animate={{ y: [0, 10, 0] }}
-                    transition={{ duration: 1.5, repeat: Infinity }}
-                >
-                    <svg xmlns="http://www.w3.org/2000/svg" className="h-6 w-6 sm:h-8 sm:w-8 text-white/70" fill="none" viewBox="0 0 24 24" stroke="currentColor">
-                        <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M19 9l-7 7-7-7" />
-                    </svg>
-                </motion.div>
-            </div>
+                    {/* Scroll indicator */}
+                    <motion.div 
+                        className="absolute bottom-4 sm:bottom-8 left-1/2 transform -translate-x-1/2 z-10"
+                        animate={{ y: [0, 10, 0] }}
+                        transition={{ duration: 1.5, repeat: Infinity }}
+                    >
+                        <svg xmlns="http://www.w3.org/2000/svg" className="h-6 w-6 sm:h-8 sm:w-8 text-white/70" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                            <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M19 9l-7 7-7-7" />
+                        </svg>
+                    </motion.div>
+                </div>
 
-            {/* Features Section */}
+                {/* Features Section */}
             <section id="features" className="py-16 sm:py-20 bg-gradient-to-b from-slate-900 via-purple-900 to-slate-800">
                 <div className="container mx-auto px-4 sm:px-6 lg:px-8">
                     <motion.div 

@@ -1,2 +1,36 @@
 User-agent: *
-Disallow:
+Allow: /
+
+# Disallow admin and sensitive areas
+Disallow: /control-panel/
+Disallow: /admin/
+Disallow: /api/
+Disallow: /storage/
+Disallow: /bootstrap/
+Disallow: /vendor/
+Disallow: /node_modules/
+Disallow: /tests/
+Disallow: /database/
+Disallow: /config/
+Disallow: /resources/
+Disallow: /routes/
+Disallow: /app/
+Disallow: /scripts/
+Disallow: /storage/api-cache/
+Disallow: /storage/logs/
+Disallow: /storage/framework/
+Disallow: /storage/app/
+
+# Allow important pages
+Allow: /products
+Allow: /tos
+Allow: /login
+Allow: /register
+Allow: /profile
+Allow: /orders
+
+# Sitemap location
+Sitemap: https://nexusshop.store/sitemap.xml
+
+# Crawl delay (optional - be respectful to server)
+Crawl-delay: 1

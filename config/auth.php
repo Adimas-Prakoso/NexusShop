@@ -65,7 +65,7 @@ return [
     'providers' => [
         'users' => [
             'driver' => 'eloquent',
-            'model' => null, // Disabled for no-database setup
+            'model' => App\Models\User::class,
         ],
         'admins' => [
             'driver' => 'eloquent',

@@ -43,14 +43,16 @@ interface Payment {
 interface OrderPaymentProps {
     order: Order;
     payment: Payment;
+    sandbox_mode?: boolean;
 }
 
-const OrderPayment: React.FC<OrderPaymentProps> = ({ order, payment }) => {
+const OrderPayment: React.FC<OrderPaymentProps> = ({ order, payment, sandbox_mode = false }) => {
     const [paymentStatus, setPaymentStatus] = useState(payment.status);
     const [timeLeft, setTimeLeft] = useState<string>('');
     const [isExpired, setIsExpired] = useState(false);
     const [copying, setCopying] = useState(false);
     const [checking, setChecking] = useState(false);
+    const [markingAsPaid, setMarkingAsPaid] = useState(false);
 
     // Check payment status periodically
     useEffect(() => {
@@ -169,6 +171,44 @@ const OrderPayment: React.FC<OrderPaymentProps> = ({ order, payment }) => {
         } catch (error) {
             console.error('Failed to copy:', error);
             setCopying(false);
+        }
+    };
+
+    const handleMarkAsPaid = async () => {
+        if (!sandbox_mode) return;
+        
+        setMarkingAsPaid(true);
+        try {
+            const response = await fetch(`/order/${order.order_id}/mark-as-paid`, {
+                method: 'GET',
+                headers: {
+                    'Accept': 'application/json',
+                },
+                credentials: 'same-origin', // Include cookies
+            });
+            
+            if (!response.ok) {
+                const errorText = await response.text();
+                throw new Error(`HTTP ${response.status}: ${errorText}`);
+            }
+            
+            const data = await response.json();
+            
+            if (data.success) {
+                setPaymentStatus('paid');
+                // Redirect to status page after a short delay
+                setTimeout(() => {
+                    window.location.href = `/order/${order.order_id}/status`;
+                }, 1500);
+            } else {
+                alert('Failed to mark as paid: ' + (data.message || 'Unknown error'));
+            }
+        } catch (error) {
+            console.error('Error marking as paid:', error);
+            const errorMessage = error instanceof Error ? error.message : 'Unknown error';
+            alert('Failed to mark as paid. Please try again. Error: ' + errorMessage);
+        } finally {
+            setMarkingAsPaid(false);
         }
     };
 
@@ -335,6 +375,39 @@ const OrderPayment: React.FC<OrderPaymentProps> = ({ order, payment }) => {
                                         </>
                                     )}
                                 </motion.button>
+
+                                {/* Sandbox Mode - Mark as Paid Button */}
+                                {sandbox_mode && paymentStatus === 'pending' && !isExpired && (
+                                    <motion.button
+                                        onClick={handleMarkAsPaid}
+                                        disabled={markingAsPaid}
+                                        whileHover={{ scale: 1.02 }}
+                                        whileTap={{ scale: 0.98 }}
+                                        className="w-full mt-3 py-3 bg-green-600 hover:bg-green-700 disabled:bg-gray-600 text-white rounded-lg font-medium transition-all duration-300 flex items-center justify-center space-x-2"
+                                    >
+                                        {markingAsPaid ? (
+                                            <>
+                                                <FaSpinner className="animate-spin" />
+                                                <span>Marking as Paid...</span>
+                                            </>
+                                        ) : (
+                                            <>
+                                                <FaCheckCircle />
+                                                <span>🎯 Sandbox: Tandai sebagai Selesai</span>
+                                            </>
+                                        )}
+                                    </motion.button>
+                                )}
+
+                                {/* Sandbox Mode Indicator */}
+                                {sandbox_mode && (
+                                    <div className="mt-4 p-3 bg-yellow-900/20 border border-yellow-500/30 rounded-lg">
+                                        <div className="flex items-center space-x-2 text-yellow-300 text-sm">
+                                            <FaInfoCircle />
+                                            <span>🧪 Sandbox Mode Active - Use "Tandai sebagai Selesai" to simulate payment</span>
+                                        </div>
+                                    </div>
+                                )}
                             </div>
 
                             {/* Order Summary */}

@@ -50,10 +50,23 @@ import {
     FaHeart,
 } from 'react-icons/fa';
 import { GiPistolGun, GiSwordAltar } from 'react-icons/gi';
+import UserDropdown from '@/components/UserDropdown';
+import { Button } from '@/components/ui/button';
 
 interface LoadingProgressEvent {
   loaded: number;
   total: number;
+}
+
+interface User {
+  name: string;
+  email: string;
+}
+
+interface Props {
+  auth: {
+    user: User | null;
+  };
 }
 
 // Language translations
@@ -234,7 +247,7 @@ const popularGames = {
     ]
 };
 
-const Products = () => {
+const Products = ({ auth }: Props) => {
     const mountRef = useRef<HTMLDivElement>(null);
     const [isScrolled, setIsScrolled] = useState(false);
     const [currentLanguage, setCurrentLanguage] = useState<'en' | 'id'>('id');
@@ -567,51 +580,50 @@ const Products = () => {
 
                         {/* Login Button and Language Selector */}
                         <div className="flex items-center space-x-2 md:space-x-4">
-                            <motion.button 
-                                whileHover={{ scale: 1.05 }}
-                                whileTap={{ scale: 0.95 }}
-                                className="px-5 py-2.5 bg-gradient-to-r from-blue-600 to-indigo-700 hover:from-blue-700 hover:to-indigo-800 text-white rounded-full transition-colors shadow-lg shadow-blue-700/30 text-sm md:text-base font-medium"
-                            >
-                                {t.navbar.login}
-                            </motion.button>
-
-                            {/* Language Selector */}
-                            <div className="relative">
-                                <motion.button
-                                    onClick={() => setIsLanguageMenuOpen(!isLanguageMenuOpen)}
-                                    whileHover={{ scale: 1.05 }}
-                                    whileTap={{ scale: 0.95 }}
-                                    className="flex items-center space-x-1 md:space-x-2 px-3 md:px-3.5 py-2.5 bg-white/10 backdrop-blur-lg border border-white/20 rounded-full text-white hover:bg-white/20 transition-all duration-300"
-                                >
-                                    <FaGlobe className="text-sm md:text-base" />
-                                    <span className="text-sm md:text-base font-medium">{currentLanguage.toUpperCase()}</span>
-                                </motion.button>
-
-                                <AnimatePresence>
+                            <div className="flex items-center gap-4">
+                                <div className="relative">
+                                    <button
+                                        onClick={() => setIsLanguageMenuOpen(!isLanguageMenuOpen)}
+                                        className="flex items-center gap-2 text-gray-700 hover:text-gray-900"
+                                    >
+                                        <FaGlobe className="h-5 w-5" />
+                                        <span>{t.navbar.language}</span>
+                                    </button>
                                     {isLanguageMenuOpen && (
-                                        <motion.div
-                                            initial={{ opacity: 0, y: -10 }}
-                                            animate={{ opacity: 1, y: 0 }}
-                                            exit={{ opacity: 0, y: -10 }}
-                                            className="absolute right-0 mt-2 w-28 bg-gray-900/95 backdrop-blur-lg border border-white/20 rounded-xl overflow-hidden shadow-xl shadow-blue-900/30"
-                                        >
-                                            <button
-                                                onClick={() => changeLanguage('id')}
-                                                className="w-full px-4 py-3 text-left text-white hover:bg-white/10 transition-colors flex items-center space-x-2"
-                                            >
-                                                <span className="w-5 h-5 rounded-full bg-red-600"></span>
-                                                <span>Indonesia</span>
-                                            </button>
-                                            <button
-                                                onClick={() => changeLanguage('en')}
-                                                className="w-full px-4 py-3 text-left text-white hover:bg-white/10 transition-colors flex items-center space-x-2"
-                                            >
-                                                <span className="w-5 h-5 rounded-full bg-blue-600"></span>
-                                                <span>English</span>
-                                            </button>
-                                        </motion.div>
+                                        <div className="absolute right-0 mt-2 w-48 rounded-md shadow-lg bg-white ring-1 ring-black ring-opacity-5">
+                                            <div className="py-1" role="menu">
+                                                <button
+                                                    onClick={() => {
+                                                        changeLanguage('en');
+                                                        setIsLanguageMenuOpen(false);
+                                                    }}
+                                                    className="block px-4 py-2 text-sm text-gray-700 hover:bg-gray-100 w-full text-left"
+                                                >
+                                                    English
+                                                </button>
+                                                <button
+                                                    onClick={() => {
+                                                        changeLanguage('id');
+                                                        setIsLanguageMenuOpen(false);
+                                                    }}
+                                                    className="block px-4 py-2 text-sm text-gray-700 hover:bg-gray-100 w-full text-left"
+                                                >
+                                                    Indonesia
+                                                </button>
+                                            </div>
+                                        </div>
                                     )}
-                                </AnimatePresence>
+                                </div>
+
+                                {auth.user ? (
+                                    <UserDropdown user={auth.user} />
+                                ) : (
+                                    <Button asChild>
+                                        <Link href="/login">
+                                            {t.navbar.login}
+                                        </Link>
+                                    </Button>
+                                )}
                             </div>
                         </div>
                     </div>

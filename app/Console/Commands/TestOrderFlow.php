@@ -51,7 +51,7 @@ class TestOrderFlow extends Command
         
         // Create test payment
         $paymentId = 'PAY-' . strtoupper(Str::random(10));
-        $midtransOrderId = 'MT-' . $order->id . '-' . time();
+        $midtransOrderId = 'NXS-' . $order->id . '-' . time();
         
         $payment = Payment::create([
             'order_id' => $order->id,

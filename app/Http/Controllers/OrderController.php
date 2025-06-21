@@ -35,6 +35,12 @@ class OrderController extends Controller
 
     public function store(Request $request)
     {
+        Log::info('Order store method called', [
+            'request_data' => $request->all(),
+            'user_agent' => $request->userAgent(),
+            'ip' => $request->ip()
+        ]);
+
         $request->validate([
             'email' => 'required|email',
             'service_id' => 'required|integer',
@@ -50,6 +56,8 @@ class OrderController extends Controller
         // Generate unique order ID
         $orderId = 'ORD-' . strtoupper(Str::random(10));
 
+        Log::info('Creating order', ['order_id' => $orderId]);
+
         // Create order
         $order = Order::create([
             'order_id' => $orderId,
@@ -64,9 +72,19 @@ class OrderController extends Controller
             'status' => 'pending',
         ]);
 
+        Log::info('Order created successfully', [
+            'order_id' => $order->id,
+            'order_id_string' => $order->order_id
+        ]);
+
         // Create payment
         $paymentId = 'PAY-' . strtoupper(Str::random(10));
-        $midtransOrderId = 'MT-' . $order->id . '-' . time();
+        $midtransOrderId = 'NXS-' . $order->id . '-' . time();
+
+        Log::info('Creating payment', [
+            'payment_id' => $paymentId,
+            'midtrans_order_id' => $midtransOrderId
+        ]);
 
         $payment = Payment::create([
             'order_id' => $order->id,
@@ -78,8 +96,25 @@ class OrderController extends Controller
             'expired_at' => now()->setTimezone('Asia/Jakarta')->addHours(24), // Use Jakarta timezone to match Midtrans
         ]);
 
+        Log::info('Payment created successfully', [
+            'payment_id' => $payment->id,
+            'payment_id_string' => $payment->payment_id
+        ]);
+
         // Process payment with Midtrans
+        Log::info('Processing payment with Midtrans', [
+            'order_id' => $order->order_id,
+            'payment_method' => $payment->payment_method,
+            'amount' => $payment->amount
+        ]);
+
         $paymentResult = $this->processMidtransPayment($payment, $order);
+
+        Log::info('Midtrans payment result', [
+            'success' => $paymentResult['success'],
+            'message' => $paymentResult['message'] ?? 'No message',
+            'has_data' => isset($paymentResult['data'])
+        ]);
 
         if ($paymentResult['success']) {
             $data = $paymentResult['data'];
@@ -178,8 +213,47 @@ class OrderController extends Controller
             
             $payment->update($updateData);
 
-            return redirect()->route('order.payment', $order->order_id);
+            Log::info('Redirecting to payment page', [
+                'order_id' => $order->order_id,
+                'route' => 'order.payment',
+                'url' => route('order.payment', $order->order_id)
+            ]);
+
+            // Try to redirect, but also provide fallback
+            try {
+                // Force HTTPS for redirect
+                $paymentUrl = route('order.payment', $order->order_id);
+                if (!str_starts_with($paymentUrl, 'https://')) {
+                    $paymentUrl = str_replace('http://', 'https://', $paymentUrl);
+                }
+                
+                return redirect()->away($paymentUrl);
+            } catch (\Exception $e) {
+                Log::error('Redirect failed, providing fallback', [
+                    'order_id' => $order->order_id,
+                    'error' => $e->getMessage()
+                ]);
+                
+                // Return JSON response with payment URL as fallback
+                $paymentUrl = route('order.payment', $order->order_id);
+                if (!str_starts_with($paymentUrl, 'https://')) {
+                    $paymentUrl = str_replace('http://', 'https://', $paymentUrl);
+                }
+                
+                return response()->json([
+                    'success' => true,
+                    'message' => 'Order created successfully!',
+                    'payment_url' => $paymentUrl,
+                    'order_id' => $order->order_id,
+                    'manual_redirect' => true
+                ]);
+            }
         } else {
+            Log::error('Payment processing failed', [
+                'order_id' => $order->order_id,
+                'error_message' => $paymentResult['message']
+            ]);
+
             $payment->update(['status' => 'failed']);
             return back()->withErrors(['payment' => 'Payment processing failed: ' . $paymentResult['message']]);
         }
@@ -211,6 +285,7 @@ class OrderController extends Controller
         return Inertia::render('Order/Payment', [
             'order' => $order,
             'payment' => $payment,
+            'sandbox_mode' => config('services.midtrans.sandbox', true),
         ]);
     }
 
@@ -218,9 +293,17 @@ class OrderController extends Controller
     {
         $order = Order::with('payment')->where('order_id', $orderId)->firstOrFail();
         
+        // Check Medanpedia status if we have a Medanpedia order ID
+        $medanpediaStatus = null;
+        if ($order->medanpedia_order_id) {
+            $medanpediaService = new \App\Services\MedanpediaService();
+            $medanpediaStatus = $medanpediaService->checkOrderStatus($order->medanpedia_order_id);
+        }
+        
         return Inertia::render('Order/Status', [
             'order' => $order,
             'payment' => $order->payment,
+            'medanpedia_status' => $medanpediaStatus,
         ]);
     }
 
@@ -238,8 +321,94 @@ class OrderController extends Controller
             $this->processOrderWithMedanpedia($order);
         }
 
+        // Check order status from Medanpedia if we have a Medanpedia order ID
+        $medanpediaStatus = null;
+        if ($order->medanpedia_order_id) {
+            $medanpediaService = new \App\Services\MedanpediaService();
+            $statusResult = $medanpediaService->checkOrderStatus($order->medanpedia_order_id);
+            $medanpediaStatus = $statusResult;
+            
+            if ($statusResult['success']) {
+                // Update order with latest status from Medanpedia
+                $order->update([
+                    'status' => strtolower($statusResult['status']),
+                    'start_count' => $statusResult['start_count'],
+                    'remains' => $statusResult['remains'],
+                    'medanpedia_response' => array_merge($order->medanpedia_response ?? [], [
+                        'last_status_check' => now()->toISOString(),
+                        'status_result' => $statusResult
+                    ])
+                ]);
+                
+                Log::info('Order status updated from Medanpedia', [
+                    'order_id' => $order->order_id,
+                    'medanpedia_order_id' => $order->medanpedia_order_id,
+                    'status' => $statusResult['status'],
+                    'start_count' => $statusResult['start_count'],
+                    'remains' => $statusResult['remains']
+                ]);
+            } else {
+                Log::warning('Failed to check order status from Medanpedia', [
+                    'order_id' => $order->order_id,
+                    'medanpedia_order_id' => $order->medanpedia_order_id,
+                    'error' => $statusResult['message']
+                ]);
+            }
+        }
+
         return response()->json([
             'order' => $order->fresh(['payment']),
+            'medanpedia_status' => $medanpediaStatus,
+        ]);
+    }
+
+    public function markAsPaid($orderId)
+    {
+        // Only allow in sandbox mode
+        if (!config('services.midtrans.sandbox', true)) {
+            return response()->json([
+                'success' => false,
+                'message' => 'This feature is only available in sandbox mode'
+            ], 403);
+        }
+
+        $order = Order::with('payment')->where('order_id', $orderId)->firstOrFail();
+        
+        if (!$order->payment) {
+            return response()->json([
+                'success' => false,
+                'message' => 'Payment not found'
+            ], 404);
+        }
+
+        if ($order->payment->status === 'paid') {
+            return response()->json([
+                'success' => false,
+                'message' => 'Payment is already marked as paid'
+            ], 400);
+        }
+
+        // Update payment status to paid
+        $order->payment->update([
+            'status' => 'paid',
+            'midtrans_response' => array_merge($order->payment->midtrans_response ?? [], [
+                'sandbox_manual_paid' => true,
+                'paid_at' => now()->toISOString()
+            ])
+        ]);
+
+        // Process the order with Medanpedia
+        $this->processOrderWithMedanpedia($order);
+
+        Log::info('Payment marked as paid in sandbox mode', [
+            'order_id' => $order->order_id,
+            'payment_id' => $order->payment->payment_id
+        ]);
+
+        return response()->json([
+            'success' => true,
+            'message' => 'Payment marked as paid successfully',
+            'order' => $order->fresh(['payment'])
         ]);
     }
 

@@ -1,0 +1,98 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<urlset xmlns="http://www.sitemaps.org/schemas/sitemap/0.9"
+        xmlns:image="http://www.google.com/schemas/sitemap-image/1.1"
+        xmlns:news="http://www.google.com/schemas/sitemap-news/0.9">
+
+  <url>
+    <loc>https://nexusshop.store/</loc>
+    <lastmod>2025-06-21T08:46:45.683870Z</lastmod>
+    <changefreq>daily</changefreq>
+    <priority>1.0</priority>
+    <image:image>
+      <image:loc>https://nexusshop.store/logo.png</image:loc>
+      <image:title>NexusShop - Digital Top-Up Platform</image:title>
+    </image:image>
+  </url>
+
+  <url>
+    <loc>https://nexusshop.store/products</loc>
+    <lastmod>2025-06-21T08:46:45.683870Z</lastmod>
+    <changefreq>weekly</changefreq>
+    <priority>0.9</priority>
+    <image:image>
+      <image:loc>https://nexusshop.store/assets/images/mlbb.png</image:loc>
+      <image:title>Game Top-Up Services</image:title>
+    </image:image>
+  </url>
+
+  <url>
+    <loc>https://nexusshop.store/products/social/instagram</loc>
+    <lastmod>2025-06-21T08:46:45.683870Z</lastmod>
+    <changefreq>weekly</changefreq>
+    <priority>0.8</priority>
+  </url>
+
+  <url>
+    <loc>https://nexusshop.store/products/social/facebook</loc>
+    <lastmod>2025-06-21T08:46:45.683870Z</lastmod>
+    <changefreq>weekly</changefreq>
+    <priority>0.8</priority>
+  </url>
+
+  <url>
+    <loc>https://nexusshop.store/products/social/tiktok</loc>
+    <lastmod>2025-06-21T08:46:45.683870Z</lastmod>
+    <changefreq>weekly</changefreq>
+    <priority>0.8</priority>
+  </url>
+
+  <url>
+    <loc>https://nexusshop.store/products/social/youtube</loc>
+    <lastmod>2025-06-21T08:46:45.683870Z</lastmod>
+    <changefreq>weekly</changefreq>
+    <priority>0.8</priority>
+  </url>
+
+  <url>
+    <loc>https://nexusshop.store/login</loc>
+    <lastmod>2025-06-21T08:46:45.683870Z</lastmod>
+    <changefreq>monthly</changefreq>
+    <priority>0.5</priority>
+  </url>
+
+  <url>
+    <loc>https://nexusshop.store/register</loc>
+    <lastmod>2025-06-21T08:46:45.683870Z</lastmod>
+    <changefreq>monthly</changefreq>
+    <priority>0.5</priority>
+  </url>
+
+  <url>
+    <loc>https://nexusshop.store/profile</loc>
+    <lastmod>2025-06-21T08:46:45.683870Z</lastmod>
+    <changefreq>monthly</changefreq>
+    <priority>0.4</priority>
+  </url>
+
+  <url>
+    <loc>https://nexusshop.store/orders</loc>
+    <lastmod>2025-06-21T08:46:45.683870Z</lastmod>
+    <changefreq>monthly</changefreq>
+    <priority>0.4</priority>
+  </url>
+
+  <url>
+    <loc>https://nexusshop.store/order/create</loc>
+    <lastmod>2025-06-21T08:46:45.683870Z</lastmod>
+    <changefreq>weekly</changefreq>
+    <priority>0.6</priority>
+  </url>
+
+  <url>
+    <loc>https://nexusshop.store/tos</loc>
+    <lastmod>2025-06-21T08:46:45.683870Z</lastmod>
+    <changefreq>monthly</changefreq>
+    <priority>0.3</priority>
+  </url>
+
+</urlset>
