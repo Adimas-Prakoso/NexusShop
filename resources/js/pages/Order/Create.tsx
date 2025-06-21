@@ -51,7 +51,7 @@ const OrderCreate: React.FC<OrderCreateProps> = ({ service }) => {
     const handleQuantityChange = (e: React.ChangeEvent<HTMLInputElement>) => {
         const quantity = parseInt(e.target.value);
         if (quantity >= service.min && quantity <= service.max) {
-            calculatePrice(quantity);
+        calculatePrice(quantity);
         }
     };
 
@@ -301,21 +301,21 @@ const OrderCreate: React.FC<OrderCreateProps> = ({ service }) => {
                                 {/* Submit Button */}
                                 <div className="flex justify-end">
                                     <button
-                                        type="submit"
+                                    type="submit"
                                         disabled={isSubmitting || processing}
                                         className="flex items-center space-x-2 px-8 py-4 bg-gradient-to-r from-blue-600 to-purple-600 hover:from-blue-700 hover:to-purple-700 disabled:opacity-50 disabled:cursor-not-allowed rounded-lg font-semibold text-white transition-all duration-200 transform hover:scale-105"
-                                    >
+                                >
                                         {isSubmitting || processing ? (
-                                            <>
-                                                <div className="animate-spin w-5 h-5 border-2 border-white border-t-transparent rounded-full"></div>
-                                                <span>Processing...</span>
-                                            </>
-                                        ) : (
-                                            <>
+                                        <>
+                                            <div className="animate-spin w-5 h-5 border-2 border-white border-t-transparent rounded-full"></div>
+                                            <span>Processing...</span>
+                                        </>
+                                    ) : (
+                                        <>
                                                 <FaShoppingCart />
                                                 <span>Proceed to Payment - Rp {totalPrice.toLocaleString('id-ID')}</span>
-                                            </>
-                                        )}
+                                        </>
+                                    )}
                                     </button>
                                 </div>
                             </form>
