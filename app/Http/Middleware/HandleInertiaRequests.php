@@ -40,7 +40,7 @@ class HandleInertiaRequests extends Middleware
     {
         return array_merge(parent::share($request), [
             'name' => config('app.name'),
-            'quote' => fn() => $this->getFormattedQuote(),
+            // 'quote' => fn() => $this->getFormattedQuote(), // Temporarily disabled for production
             'auth' => [
                 'user' => fn() => $request->user() ? [
                     'id' => $request->user()->id,
