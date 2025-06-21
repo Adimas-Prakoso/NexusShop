@@ -40,7 +40,7 @@ class HandleInertiaRequests extends Middleware
     {
         return array_merge(parent::share($request), [
             'name' => config('app.name'),
-            'quote' => fn() => str($this->getRandomQuote())->explode('-')->pipe(fn($parts) => ['message' => trim($parts[0]), 'author' => trim($parts[1])]),
+            'quote' => fn() => $this->getFormattedQuote(),
             'auth' => [
                 'user' => fn() => $request->user() ? [
                     'id' => $request->user()->id,
@@ -62,8 +62,40 @@ class HandleInertiaRequests extends Middleware
         ]);
     }
 
-    private function getRandomQuote(): string
+    public function getRandomQuote(): string
     {
         return Inspiring::quotes()->random();
+    }
+
+    public function getFormattedQuote(): array
+    {
+        try {
+            $quote = $this->getRandomQuote();
+            \Log::info('Random quote: ' . $quote);
+            
+            $parts = explode('-', $quote, 2);
+            \Log::info('Parts count: ' . count($parts));
+            \Log::info('Parts: ' . json_encode($parts));
+            
+            if (count($parts) === 2) {
+                return [
+                    'message' => trim($parts[0]),
+                    'author' => trim($parts[1])
+                ];
+            } else {
+                // If no dash found, treat the entire quote as the message
+                return [
+                    'message' => trim($quote),
+                    'author' => 'Unknown'
+                ];
+            }
+        } catch (\Exception $e) {
+            \Log::error('Error in getFormattedQuote: ' . $e->getMessage());
+            // Fallback quote in case of any error
+            return [
+                'message' => 'The only way to do great work is to love what you do.',
+                'author' => 'Steve Jobs'
+            ];
+        }
     }
 }
