@@ -49,6 +49,12 @@ self.addEventListener('fetch', (event) => {
         return;
     }
     
+    // Skip unsupported URL schemes (chrome-extension, moz-extension, etc.)
+    const url = new URL(request.url);
+    if (url.protocol !== 'http:' && url.protocol !== 'https:') {
+        return;
+    }
+    
     // For build assets, use a cache-first strategy.
     if (request.url.includes('/build/')) {
         event.respondWith(
@@ -57,7 +63,9 @@ self.addEventListener('fetch', (event) => {
                     if (networkResponse.ok) {
                         const responseToCache = networkResponse.clone();
                         caches.open(STATIC_CACHE).then(cache => {
-                            cache.put(request, responseToCache);
+                            cache.put(request, responseToCache).catch(error => {
+                                console.warn('Failed to cache build asset:', error);
+                            });
                         });
                     }
                     return networkResponse;
@@ -77,7 +85,9 @@ self.addEventListener('fetch', (event) => {
                 if (networkResponse.ok) {
                     const responseToCache = networkResponse.clone();
                     caches.open(DYNAMIC_CACHE).then((cache) => {
-                        cache.put(request, responseToCache);
+                        cache.put(request, responseToCache).catch(error => {
+                            console.warn('Failed to cache dynamic response:', error);
+                        });
                     });
                 }
                 return networkResponse;

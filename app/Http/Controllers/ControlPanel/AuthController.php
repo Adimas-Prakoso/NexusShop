@@ -7,6 +7,11 @@ use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Auth;
 use Illuminate\Support\Facades\Hash;
 use App\Models\Admin;
+use App\Events\RecentActivityCreated;
+use App\Models\User;
+use App\Models\Order;
+use App\Models\Payment;
+use App\Models\RecentActivity;
 use Inertia\Inertia;
 
 class AuthController extends Controller
@@ -40,6 +45,13 @@ class AuthController extends Controller
         if (Auth::guard('admin')->attempt($credentials, $remember)) {
             $request->session()->regenerate();
             
+            $admin = Auth::guard('admin')->user();
+            $activity = $admin->activities()->create([
+                'type' => 'admin_logged_in',
+                'description' => 'Admin ' . $admin->name . ' logged in.',
+            ]);
+            event(new RecentActivityCreated($activity));
+
             // Set custom session lifetime based on remember me
             if ($remember) {
                 // Remember me: 1 day (1440 minutes)
@@ -99,9 +111,20 @@ class AuthController extends Controller
      */
     public function dashboard(Request $request)
     {
+        $totalUsers = User::count();
+        $totalOrders = Order::count();
+        $totalSales = Payment::where('status', 'paid')->orWhere('status', 'success')->sum('amount');
+        $recentActivities = RecentActivity::latest()->take(10)->get();
+
         return Inertia::render('ControlPanel/Dashboard', [
             'admin' => Auth::guard('admin')->user(),
-            'remember_me' => $request->session()->get('admin_remember', false)
+            'remember_me' => $request->session()->get('admin_remember', false),
+            'stats' => [
+                'totalUsers' => $totalUsers,
+                'totalOrders' => $totalOrders,
+                'totalSales' => $totalSales,
+            ],
+            'recentActivities' => $recentActivities,
         ]);
     }
 }

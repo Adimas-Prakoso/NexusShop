@@ -10,6 +10,8 @@ class Admin extends Authenticatable
 {
     use HasFactory, Notifiable;
 
+    protected $guard = 'admin';
+
     /**
      * The attributes that are mass assignable.
      *
@@ -19,6 +21,7 @@ class Admin extends Authenticatable
         'name',
         'email',
         'password',
+        'role'
     ];
 
     /**
@@ -42,5 +45,13 @@ class Admin extends Authenticatable
             'email_verified_at' => 'datetime',
             'password' => 'hashed',
         ];
+    }
+
+    /**
+     * Get all of the admin's activities.
+     */
+    public function activities()
+    {
+        return $this->morphMany(RecentActivity::class, 'subject');
     }
 }

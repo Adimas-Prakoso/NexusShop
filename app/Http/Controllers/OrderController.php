@@ -4,6 +4,8 @@ namespace App\Http\Controllers;
 
 use App\Models\Order;
 use App\Models\Payment;
+use App\Models\RecentActivity;
+use App\Events\RecentActivityCreated;
 use Illuminate\Http\Request;
 use Illuminate\Support\Str;
 use Illuminate\Support\Facades\Http;
@@ -71,6 +73,12 @@ class OrderController extends Controller
             'price' => $request->price,
             'status' => 'pending',
         ]);
+
+        $activity = $order->activities()->create([
+            'type' => 'order_placed',
+            'description' => 'New order ' . $order->order_id . ' was placed for ' . $order->service_name,
+        ]);
+        event(new RecentActivityCreated($activity));
 
         Log::info('Order created successfully', [
             'order_id' => $order->id,
@@ -221,9 +229,9 @@ class OrderController extends Controller
 
             // Try to redirect, but also provide fallback
             try {
-                // Force HTTPS for redirect
+                // Force HTTPS for redirect only in production
                 $paymentUrl = route('order.payment', $order->order_id);
-                if (!str_starts_with($paymentUrl, 'https://')) {
+                if (app()->environment('production') && !str_starts_with($paymentUrl, 'https://')) {
                     $paymentUrl = str_replace('http://', 'https://', $paymentUrl);
                 }
                 
@@ -236,7 +244,7 @@ class OrderController extends Controller
                 
                 // Return JSON response with payment URL as fallback
                 $paymentUrl = route('order.payment', $order->order_id);
-                if (!str_starts_with($paymentUrl, 'https://')) {
+                if (app()->environment('production') && !str_starts_with($paymentUrl, 'https://')) {
                     $paymentUrl = str_replace('http://', 'https://', $paymentUrl);
                 }
                 

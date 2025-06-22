@@ -12,6 +12,7 @@ class Order extends Model
 
     protected $fillable = [
         'order_id',
+        'user_id',
         'email',
         'service_id',
         'service_name',
@@ -37,9 +38,22 @@ class Order extends Model
         'medanpedia_response' => 'array',
     ];
 
+    public function user()
+    {
+        return $this->belongsTo(User::class);
+    }
+
     public function payment(): HasOne
     {
         return $this->hasOne(Payment::class);
+    }
+
+    /**
+     * Get all of the order's activities.
+     */
+    public function activities()
+    {
+        return $this->morphMany(RecentActivity::class, 'subject');
     }
 
     public function getStatusColorAttribute(): string

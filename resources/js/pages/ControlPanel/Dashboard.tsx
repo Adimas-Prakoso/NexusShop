@@ -1,11 +1,26 @@
 import { Head, useForm } from '@inertiajs/react';
-import { LogOut, Settings, Users, Package, BarChart3, Activity, DollarSign, ShoppingCart, TrendingUp, Sparkles, Zap, Rocket, Star } from 'lucide-react';
+import { LogOut, Settings, Users, Package, BarChart3, Activity, DollarSign, ShoppingCart, TrendingUp, Sparkles, Zap, Rocket, Star, Clock } from 'lucide-react';
 import { useState, useEffect } from 'react';
 import { useAdminSessionTimeout } from '@/hooks/useSessionTimeout';
 import { SessionNotification } from '@/components/SessionNotification';
 import { LanguageProvider, useLanguage } from '@/hooks/useLanguage';
 import { SidebarProvider, SpaceSidebar, MobileMenuButton } from '@/components/SpaceSidebar';
 import { LanguageSwitcher } from '@/components/LanguageSwitcher';
+import { formatDistanceToNow } from 'date-fns';
+
+declare global {
+    interface Window {
+        Pusher: any;
+        Echo: any;
+    }
+}
+
+interface RecentActivity {
+    id: number;
+    description: string;
+    created_at: string;
+    type: string;
+}
 
 interface DashboardProps {
     admin?: {
@@ -14,12 +29,38 @@ interface DashboardProps {
         role: string;
     };
     remember_me?: boolean;
+    stats?: {
+        totalUsers: number;
+        totalOrders: number;
+        totalSales: number;
+    };
+    recentActivities?: RecentActivity[];
 }
 
-function DashboardContent({ admin, remember_me }: DashboardProps) {
+function DashboardContent({ admin, remember_me, stats, recentActivities: initialActivities }: DashboardProps) {
     const { post, processing } = useForm();
     const [rememberMe, setRememberMe] = useState(remember_me || false);
+    const [recentActivities, setRecentActivities] = useState(initialActivities || []);
     const { t } = useLanguage();
+
+    useEffect(() => {
+        setRecentActivities(initialActivities || []);
+    }, [initialActivities]);
+
+    useEffect(() => {
+        if (window.Echo) {
+            window.Echo.private('dashboard')
+                .listen('RecentActivityCreated', (e: { activity: RecentActivity }) => {
+                    setRecentActivities(prevActivities => [e.activity, ...prevActivities]);
+                });
+        }
+
+        return () => {
+            if (window.Echo) {
+                window.Echo.leave('dashboard');
+            }
+        };
+    }, []);
 
     // Check if user used remember me from props first, then fallback to cookie or session storage
     useEffect(() => {
@@ -219,7 +260,9 @@ function DashboardContent({ admin, remember_me }: DashboardProps) {
                                     <div className="flex items-center justify-between">
                                         <div>
                                             <p className="text-slate-300 text-sm font-medium animate-fade-in">{t('dashboard.totalSales')}</p>
-                                            <p className="text-3xl font-bold text-white mt-2 animate-count-up">$24,567</p>
+                                            <p className="text-3xl font-bold text-white mt-2 animate-count-up">
+                                                {new Intl.NumberFormat('id-ID', { style: 'currency', currency: 'IDR', minimumFractionDigits: 0 }).format(stats?.totalSales ?? 0)}
+                                            </p>
                                             <p className="text-green-400 text-sm mt-1 flex items-center animate-slide-in-left" style={{ animationDelay: '0.3s' }}>
                                                 <TrendingUp className="w-4 h-4 mr-1 animate-bounce" />
                                                 +12.5%
@@ -232,7 +275,7 @@ function DashboardContent({ admin, remember_me }: DashboardProps) {
                                 </div>
                                 <div className="absolute bottom-0 right-0 w-32 h-32 bg-green-500/10 rounded-full blur-2xl group-hover:bg-green-500/20 transition-all duration-500" />
                                 <div className="absolute top-0 left-0 w-full h-full opacity-0 group-hover:opacity-100 transition-opacity duration-500">
-                                    <div className="absolute top-2 right-2 w-2 h-2 bg-green-400 rounded-full animate-ping" />
+                                    <div className="absolute top-2 right-2 w-2 h-2 bg-pink-400 rounded-full animate-ping" />
                                 </div>
                             </div>
 
@@ -243,7 +286,7 @@ function DashboardContent({ admin, remember_me }: DashboardProps) {
                                     <div className="flex items-center justify-between">
                                         <div>
                                             <p className="text-slate-300 text-sm font-medium animate-fade-in">{t('dashboard.orders')}</p>
-                                            <p className="text-3xl font-bold text-white mt-2 animate-count-up">1,247</p>
+                                            <p className="text-3xl font-bold text-white mt-2 animate-count-up">{stats?.totalOrders ?? 0}</p>
                                             <p className="text-blue-400 text-sm mt-1 flex items-center animate-slide-in-left" style={{ animationDelay: '0.3s' }}>
                                                 <TrendingUp className="w-4 h-4 mr-1 animate-bounce" />
                                                 +8.2%
@@ -291,7 +334,7 @@ function DashboardContent({ admin, remember_me }: DashboardProps) {
                                     <div className="flex items-center justify-between">
                                         <div>
                                             <p className="text-slate-300 text-sm font-medium animate-fade-in">{t('dashboard.customers')}</p>
-                                            <p className="text-3xl font-bold text-white mt-2 animate-count-up">2,847</p>
+                                            <p className="text-3xl font-bold text-white mt-2 animate-count-up">{stats?.totalUsers ?? 0}</p>
                                             <p className="text-orange-400 text-sm mt-1 flex items-center animate-slide-in-left" style={{ animationDelay: '0.3s' }}>
                                                 <Users className="w-4 h-4 mr-1 animate-bounce" />
                                                 +15.3%
@@ -384,61 +427,32 @@ function DashboardContent({ admin, remember_me }: DashboardProps) {
                             </div>
                         </div>
 
-                        {/* Enhanced Recent Activity with sophisticated animations */}
-                        <div className="bg-black/20 backdrop-blur-xl rounded-2xl p-6 border border-purple-500/20 hover:border-purple-500/30 transition-all duration-500 animate-fade-in-up" style={{ animationDelay: '0.9s' }}>
-                            <div className="flex items-center justify-between mb-6">
-                                <h3 className="text-xl font-semibold text-white flex items-center animate-slide-in-left">
-                                    <Activity className="w-6 h-6 mr-2 text-purple-400 animate-pulse" />
-                                    {t('dashboard.recentActivity')}
-                                </h3>
-                                <button className="text-purple-400 hover:text-purple-300 text-sm font-medium transition-all duration-300 flex items-center group hover:scale-105 animate-slide-in-right">
-                                    {t('dashboard.viewAll')}
-                                    <Star className="w-4 h-4 ml-1 group-hover:rotate-12 group-hover:scale-110 transition-all duration-300" />
-                                </button>
-                            </div>
-                            
+                        {/* Recent Activity Section */}
+                        <div className="bg-black/20 backdrop-blur-xl rounded-2xl p-6 border border-purple-500/20 animate-fade-in-up" style={{ animationDelay: '0.5s' }}>
+                            <h2 className="text-xl font-bold text-white mb-4 flex items-center">
+                                <Activity className="w-6 h-6 mr-3 text-cyan-400" />
+                                {t('dashboard.recentActivity')}
+                            </h2>
                             <div className="space-y-4">
-                                <div className="flex items-center space-x-4 p-4 bg-white/5 rounded-xl hover:bg-white/10 transition-all duration-300 border border-green-500/20 hover:border-green-500/40 hover:scale-102 transform cursor-pointer animate-slide-in-right" style={{ animationDelay: '1s' }}>
-                                    <div className="w-12 h-12 bg-green-500/20 rounded-full flex items-center justify-center border border-green-500/30 group-hover:scale-110 transition-transform duration-300 animate-pulse-glow">
-                                        <ShoppingCart className="w-6 h-6 text-green-400 animate-bounce" style={{ animationDelay: '0.5s' }} />
+                                {recentActivities.map((activity) => (
+                                    <div key={activity.id} className="flex items-start space-x-4 p-3 bg-white/5 rounded-lg hover:bg-white/10 transition-colors duration-300">
+                                        <div className="w-10 h-10 bg-purple-500/20 rounded-full flex items-center justify-center border border-purple-500/30">
+                                            <Zap className="w-5 h-5 text-purple-400" />
+                                        </div>
+                                        <div className="flex-1">
+                                            <p className="text-sm text-slate-200">{activity.description}</p>
+                                            <p className="text-xs text-slate-400 mt-1 flex items-center">
+                                                <Clock className="w-3 h-3 mr-1.5" />
+                                                {formatDistanceToNow(new Date(activity.created_at), { addSuffix: true })}
+                                            </p>
+                                        </div>
                                     </div>
-                                    <div className="flex-1">
-                                        <p className="text-white font-medium">{t('dashboard.newOrder')}</p>
-                                        <p className="text-slate-300 text-sm">Order #12847 - $156.99</p>
+                                ))}
+                                {(!recentActivities || recentActivities.length === 0) && (
+                                    <div className="text-center py-8 text-slate-400">
+                                        No recent activity.
                                     </div>
-                                    <div className="text-slate-400 text-sm flex items-center">
-                                        <div className="w-2 h-2 bg-green-400 rounded-full animate-ping mr-2" />
-                                        2 {t('dashboard.minutesAgo')}
-                                    </div>
-                                </div>
-
-                                <div className="flex items-center space-x-4 p-4 bg-white/5 rounded-xl hover:bg-white/10 transition-all duration-300 border border-blue-500/20 hover:border-blue-500/40 hover:scale-102 transform cursor-pointer animate-slide-in-right" style={{ animationDelay: '1.1s' }}>
-                                    <div className="w-12 h-12 bg-blue-500/20 rounded-full flex items-center justify-center border border-blue-500/30 group-hover:scale-110 transition-transform duration-300 animate-pulse-glow">
-                                        <Users className="w-6 h-6 text-blue-400 animate-bounce" style={{ animationDelay: '0.7s' }} />
-                                    </div>
-                                    <div className="flex-1">
-                                        <p className="text-white font-medium">{t('dashboard.newCustomer')}</p>
-                                        <p className="text-slate-300 text-sm">john.doe@example.com</p>
-                                    </div>
-                                    <div className="text-slate-400 text-sm flex items-center">
-                                        <div className="w-2 h-2 bg-blue-400 rounded-full animate-ping mr-2" />
-                                        5 {t('dashboard.minutesAgo')}
-                                    </div>
-                                </div>
-
-                                <div className="flex items-center space-x-4 p-4 bg-white/5 rounded-xl hover:bg-white/10 transition-all duration-300 border border-purple-500/20 hover:border-purple-500/40 hover:scale-102 transform cursor-pointer animate-slide-in-right" style={{ animationDelay: '1.2s' }}>
-                                    <div className="w-12 h-12 bg-purple-500/20 rounded-full flex items-center justify-center border border-purple-500/30 group-hover:scale-110 transition-transform duration-300 animate-pulse-glow">
-                                        <Package className="w-6 h-6 text-purple-400 animate-bounce" style={{ animationDelay: '0.9s' }} />
-                                    </div>
-                                    <div className="flex-1">
-                                        <p className="text-white font-medium">{t('dashboard.productUpdated')}</p>
-                                        <p className="text-slate-300 text-sm">Gaming Laptop Pro - Inventory updated</p>
-                                    </div>
-                                    <div className="text-slate-400 text-sm flex items-center">
-                                        <div className="w-2 h-2 bg-purple-400 rounded-full animate-ping mr-2" />
-                                        12 {t('dashboard.minutesAgo')}
-                                    </div>
-                                </div>
+                                )}
                             </div>
                         </div>
                     </main>
@@ -448,11 +462,11 @@ function DashboardContent({ admin, remember_me }: DashboardProps) {
     );
 }
 
-export default function Dashboard({ admin, remember_me }: DashboardProps) {
+export default function Dashboard({ admin, remember_me, stats, recentActivities }: DashboardProps) {
     return (
         <LanguageProvider>
             <SidebarProvider>
-                <DashboardContent admin={admin} remember_me={remember_me} />
+                <DashboardContent admin={admin} remember_me={remember_me} stats={stats} recentActivities={recentActivities} />
             </SidebarProvider>
         </LanguageProvider>
     );

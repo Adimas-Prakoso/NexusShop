@@ -26,14 +26,26 @@ class ForceHttps
             );
         }
 
+        // Skip HTTPS redirect for local development
+        if (app()->environment('local') || app()->environment('development')) {
+            return $next($request);
+        }
+
+        // Skip HTTPS redirect for localhost and development domains
+        $host = $request->getHost();
+        $isLocalhost = in_array($host, ['localhost', '127.0.0.1', '::1']) || 
+                      str_contains($host, 'localhost') ||
+                      str_contains($host, '127.0.0.1') ||
+                      str_contains($host, '.test') ||
+                      str_contains($host, '.local') ||
+                      str_contains($host, '.dev');
+
+        if ($isLocalhost) {
+            return $next($request);
+        }
+
         // Only force HTTPS in production and not on localhost
-        if (app()->environment('production') && 
-            !$request->is('localhost') && 
-            !$request->is('127.0.0.1') && 
-            !$request->is('::1') && 
-            !str_contains($request->getHost(), 'localhost') &&
-            !str_contains($request->getHost(), '127.0.0.1') &&
-            !$request->secure()) {
+        if (app()->environment('production') && !$request->secure()) {
             return redirect()->secure($request->getRequestUri());
         }
 

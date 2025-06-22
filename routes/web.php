@@ -59,6 +59,10 @@ Route::prefix('control-panel')->name('control-panel.')->group(function () {
         return redirect()->route('control-panel.login');
     });
     
+    // Admin authentication routes (no middleware - accessible to guests)
+    Route::get('/login', [AuthController::class, 'showLogin'])->name('login');
+    Route::post('/login', [AuthController::class, 'login'])->name('login.submit');
+    
     // Protected routes (require admin authentication)
     Route::middleware('admin.auth')->group(function () {
         Route::get('/dashboard', [AuthController::class, 'dashboard'])->name('dashboard');

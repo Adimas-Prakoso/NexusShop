@@ -4,6 +4,8 @@ namespace App\Http\Controllers\Auth;
 
 use App\Http\Controllers\Controller;
 use App\Models\User;
+use App\Models\RecentActivity;
+use App\Events\RecentActivityCreated;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Auth;
 use Illuminate\Support\Facades\Hash;
@@ -32,6 +34,14 @@ class AuthController extends Controller
 
             if (Auth::attempt($credentials, $request->boolean('remember'))) {
                 $request->session()->regenerate();
+
+                $user = Auth::user();
+                $activity = $user->activities()->create([
+                    'type' => 'user_logged_in',
+                    'description' => 'User ' . $user->name . ' logged in.',
+                ]);
+                event(new RecentActivityCreated($activity));
+
                 return redirect()->intended('/');
             }
 
@@ -61,6 +71,12 @@ class AuthController extends Controller
                 'email' => $validated['email'],
                 'password' => Hash::make($validated['password']),
             ]);
+
+            $activity = $user->activities()->create([
+                'type' => 'user_registered',
+                'description' => 'User ' . $user->name . ' has registered.',
+            ]);
+            event(new RecentActivityCreated($activity));
 
             Auth::login($user);
 

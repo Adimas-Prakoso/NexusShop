@@ -69,5 +69,10 @@ class AppServiceProvider extends ServiceProvider
         if (config('app.force_https') && app()->environment('production')) {
             URL::forceScheme('https');
         }
+        
+        // For local development, ensure HTTP is used
+        if (app()->environment('local') || app()->environment('development')) {
+            URL::forceScheme('http');
+        }
     }
 }
