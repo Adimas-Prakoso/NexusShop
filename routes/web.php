@@ -97,3 +97,16 @@ Route::get('/test-error', function () {
 Route::get('/force-404', function () {
     abort(404);
 });
+
+// Custom Service Unavailable Page
+Route::get('/service-unavailable', function () {
+    return inertia('errors/ServiceUnavailable', [
+        'error' => [
+            'code' => '503',
+            'message' => 'Service Temporarily Unavailable',
+            'details' => 'Our servers are currently experiencing high traffic or security protection is active.'
+        ],
+        'retryAfter' => 30,
+        'isDdos' => request()->query('ddos', false)
+    ]);
+})->name('service.unavailable');

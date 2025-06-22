@@ -38,6 +38,69 @@
     Header always set Permissions-Policy "geolocation=(), microphone=(), camera=()"
 </IfModule>
 
+# Block suspicious requests and bot scanning
+<IfModule mod_rewrite.c>
+    RewriteEngine On
+    
+    # Block WordPress scanning attempts
+    RewriteCond %{REQUEST_URI} (wp-admin|wp-login|wp-content|wp-includes|wp-config) [NC]
+    RewriteRule .* - [F,L]
+    
+    # Block common admin paths
+    RewriteCond %{REQUEST_URI} (admin|administrator|manage|management) [NC]
+    RewriteRule .* - [F,L]
+    
+    # Block file manager attempts
+    RewriteCond %{REQUEST_URI} (filemanager|fm|file|upload|uploads) [NC]
+    RewriteRule .* - [F,L]
+    
+    # Block common vulnerable files
+    RewriteCond %{REQUEST_URI} (info\.php|phpinfo|test\.php|shell\.php|backdoor\.php) [NC]
+    RewriteRule .* - [F,L]
+    
+    # Block CMS scanning
+    RewriteCond %{REQUEST_URI} (joomla|drupal|magento|opencart|prestashop) [NC]
+    RewriteRule .* - [F,L]
+    
+    # Block server info requests
+    RewriteCond %{REQUEST_URI} (server-status|server-info|status|info) [NC]
+    RewriteRule .* - [F,L]
+    
+    # Block common attack vectors
+    RewriteCond %{REQUEST_URI} (cgi-bin|cgi|bin|tmp|temp) [NC]
+    RewriteRule .* - [F,L]
+    
+    # Block backup files
+    RewriteCond %{REQUEST_URI} (backup|bak|old|backup-temp) [NC]
+    RewriteRule .* - [F,L]
+    
+    # Block well-known scanning
+    RewriteCond %{REQUEST_URI} (well-known|acme-challenge|pki-validation) [NC]
+    RewriteRule .* - [F,L]
+    
+    # Block plugin/theme scanning
+    RewriteCond %{REQUEST_URI} (plugins|modules|components|extensions|themes|templates|skins|layouts) [NC]
+    RewriteRule .* - [F,L]
+    
+    # Block database related
+    RewriteCond %{REQUEST_URI} (phpmyadmin|mysql|database|db) [NC]
+    RewriteRule .* - [F,L]
+    
+    # Block shell files
+    RewriteCond %{REQUEST_URI} (shell|cmd|command|exec|system) [NC]
+    RewriteRule .* - [F,L]
+    
+    # Block common backdoor patterns
+    RewriteCond %{REQUEST_URI} (alfa-rex|xmrlpc|chosen|parx|muse|wso112233|classwithtostring|mah|ty|ini|default|manager|radio|moon|gecko|cong|bs1|max|simple|0x|fw|13|ok|user|edit|readme|doc|buy|lock|browse|shell20211028|goat1|lmfi2|gel4y|byp|1|x|css|js|images|assets|admin|cgi-bin|include|upload|files|content|configs|wp-configs|wp-conflg|atomlib|owlmailer|mini|blue|cloud|packed|siteindex|pwnd|mar|rnEPv9|3luaO|423_index|vuln|rk2|taptap-null|esyfvxgmdq|Core32|zmFM|DaoZM|alfanew|lv|cc|jp|m|up|bak|json|link|function|about|index|item|content|network) [NC]
+    RewriteRule .* - [F,L]
+</IfModule>
+
+# Block suspicious User-Agents
+<IfModule mod_rewrite.c>
+    RewriteCond %{HTTP_USER_AGENT} (bot|crawler|spider|scanner|probe|masscan|nmap|sqlmap|nikto|dirb|gobuster|wfuzz|dirbuster|wpscan|w3af|nessus|openvas|acunetix|burp|zap|skipfish|arachni) [NC]
+    RewriteRule .* - [F,L]
+</IfModule>
+
 # Laravel routing
 <IfModule mod_rewrite.c>
     <IfModule mod_negotiation.c>

@@ -10,6 +10,14 @@ export default [
     js.configs.recommended,
     ...typescript.configs.recommended,
     {
+        languageOptions: {
+            parserOptions: {
+                project: ['./tsconfig.json'],
+                tsconfigRootDir: import.meta.dirname,
+            },
+        },
+    },
+    {
         ...react.configs.flat.recommended,
         ...react.configs.flat['jsx-runtime'], // Required for React 17+
         languageOptions: {

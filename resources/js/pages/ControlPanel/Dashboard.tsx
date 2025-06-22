@@ -1,5 +1,6 @@
+/* eslint-disable @typescript-eslint/no-explicit-any */
 import { Head, useForm } from '@inertiajs/react';
-import { LogOut, Settings, Users, Package, BarChart3, Activity, DollarSign, ShoppingCart, TrendingUp, Sparkles, Zap, Rocket, Star, Clock } from 'lucide-react';
+import { LogOut, Settings, Users, Package, BarChart3, Activity, DollarSign, ShoppingCart, TrendingUp, Sparkles, Zap, Rocket, Clock } from 'lucide-react';
 import { useState, useEffect } from 'react';
 import { useAdminSessionTimeout } from '@/hooks/useSessionTimeout';
 import { SessionNotification } from '@/components/SessionNotification';

@@ -2,10 +2,12 @@
 
 use App\Http\Middleware\AdminAuth;
 use App\Http\Middleware\CacheStaticAssets;
+use App\Http\Middleware\DdosProtectionMiddleware;
 use App\Http\Middleware\ForceHttps;
 use App\Http\Middleware\HandleAppearance;
 use App\Http\Middleware\HandleInertiaRequests;
 use App\Http\Middleware\SeoMiddleware;
+use App\Http\Middleware\SecurityMiddleware;
 use Illuminate\Foundation\Application;
 use Illuminate\Foundation\Configuration\Exceptions;
 use Illuminate\Foundation\Configuration\Middleware;
@@ -32,9 +34,15 @@ return Application::configure(basePath: dirname(__DIR__))
             SeoMiddleware::class,
         ]);
 
-        // Add global middleware for static asset caching and HTTPS
+        // Add global middleware for security and protection
         $middleware->append(CacheStaticAssets::class);
         $middleware->prepend(ForceHttps::class);
+        
+        // Add security middleware to block suspicious requests
+        $middleware->prepend(SecurityMiddleware::class);
+        
+        // Add DDoS protection middleware (highest priority)
+        $middleware->prepend(DdosProtectionMiddleware::class);
     })
     ->withExceptions(function (Exceptions $exceptions) {
         //
