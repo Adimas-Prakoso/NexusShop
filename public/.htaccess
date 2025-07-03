@@ -36,6 +36,8 @@
     Header always set X-XSS-Protection "1; mode=block"
     Header always set Referrer-Policy "strict-origin-when-cross-origin"
     Header always set Permissions-Policy "geolocation=(), microphone=(), camera=()"
+    # Force HTTPS for all resources
+    Header always set Content-Security-Policy "upgrade-insecure-requests; default-src https: 'unsafe-inline' 'unsafe-eval'; img-src https: data:; font-src https: data:; connect-src https: wss:; frame-src https:; object-src 'none';"
 </IfModule>
 
 # Block suspicious requests and bot scanning
@@ -135,8 +137,8 @@
     RewriteRule ^(.*)/$ /$1 [L,R=301]
     
     # Force HTTPS (uncomment if you have SSL)
-    # RewriteCond %{HTTPS} off
-    # RewriteRule ^(.*)$ https://%{HTTP_HOST}%{REQUEST_URI} [L,R=301]
+    RewriteCond %{HTTPS} off
+    RewriteRule ^(.*)$ https://%{HTTP_HOST}%{REQUEST_URI} [L,R=301]
     
     # Remove www (uncomment if you want to redirect www to non-www)
     # RewriteCond %{HTTP_HOST} ^www\.(.*)$ [NC]

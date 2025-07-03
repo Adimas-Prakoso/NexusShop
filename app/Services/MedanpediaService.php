@@ -24,11 +24,27 @@ class MedanpediaService
     public function getAllServices()
     {
         try {
+            Log::info('MedanpediaService::getAllServices', [
+                'api_url' => $this->apiUrl,
+                'api_key_exists' => !empty($this->apiKey),
+                'api_id_exists' => !empty($this->apiId),
+                'cache_key' => 'medanpedia_services',
+            ]);
+            
             // Cache for 1 hour to avoid too many API calls
             return Cache::remember('medanpedia_services', 3600, function () {
+                Log::info('MedanpediaService: Cache miss, calling API');
+                
                 $response = Http::timeout(30)->post($this->apiUrl, [
                     'api_id' => $this->apiId,
                     'api_key' => $this->apiKey,
+                ]);
+                
+                Log::info('MedanpediaService API response', [
+                    'status_code' => $response->status(),
+                    'successful' => $response->successful(),
+                    'has_data' => isset($response->json()['data']),
+                    'data_count' => isset($response->json()['data']) ? count($response->json()['data']) : 0,
                 ]);
 
                 if ($response->successful()) {
@@ -51,6 +67,14 @@ class MedanpediaService
     public function getServicesByCategory($category)
     {
         $allServices = $this->getAllServices();
+        
+        // Add debug logging
+        Log::info('Medanpedia getServicesByCategory', [
+            'category' => $category,
+            'all_services_count' => count($allServices),
+            'api_key_exists' => !empty($this->apiKey),
+            'api_id_exists' => !empty($this->apiId),
+        ]);
         
         // Category mapping for better URL to API category matching
         $categoryMappings = [
@@ -97,7 +121,7 @@ class MedanpediaService
             $searchTerms = [str_replace('-', ' ', $category)];
         }
         
-        return collect($allServices)->filter(function ($service) use ($searchTerms) {
+        $filteredServices = collect($allServices)->filter(function ($service) use ($searchTerms) {
             foreach ($searchTerms as $term) {
                 if (stripos($service['category'], $term) !== false) {
                     return true;
@@ -105,6 +129,15 @@ class MedanpediaService
             }
             return false;
         })->values()->toArray();
+        
+        // Add debug logging for filtered services
+        Log::info('Medanpedia filtered services', [
+            'category' => $category,
+            'filtered_services_count' => count($filteredServices),
+            'search_terms' => $searchTerms,
+        ]);
+        
+        return $filteredServices;
     }
 
     /**

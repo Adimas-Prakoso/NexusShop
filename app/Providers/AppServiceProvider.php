@@ -65,9 +65,13 @@ class AppServiceProvider extends ServiceProvider
             return "<?php echo '<script type=\"application/ld+json\">' . json_encode($expression) . '</script>'; ?>";
         });
 
-        // Force HTTPS in production only
-        if (config('app.force_https') && app()->environment('production')) {
+        // ALWAYS force HTTPS on production for both URL and asset generation
+        if (app()->environment('production')) {
             URL::forceScheme('https');
+            $this->app['request']->server->set('HTTPS', 'on');
+            
+            // Set asset URL with HTTPS
+            config(['app.asset_url' => str_replace('http://', 'https://', config('app.url'))]);
         }
         
         // For local development, ensure HTTP is used

@@ -20,8 +20,20 @@ class SocialMediaController extends Controller
      */
     public function show($category)
     {
+        // Add debug logging
+        \Illuminate\Support\Facades\Log::info('SocialMediaController::show', [
+            'category' => $category,
+            'route' => request()->route()->getName(),
+            'url' => request()->url(),
+        ]);
+        
         // Get services from API based on category
         $services = $this->medanpediaService->getServicesByCategory($category);
+        
+        // Add debug logging for services
+        \Illuminate\Support\Facades\Log::info('SocialMediaController services result', [
+            'services_count' => count($services),
+        ]);
         
         // Convert dash-separated category to readable title
         $categoryTitle = ucwords(str_replace('-', ' ', $category)) . ' Services';

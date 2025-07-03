@@ -67,6 +67,24 @@ Route::prefix('control-panel')->name('control-panel.')->group(function () {
     Route::middleware('admin.auth')->group(function () {
         Route::get('/dashboard', [AuthController::class, 'dashboard'])->name('dashboard');
         Route::post('/logout', [AuthController::class, 'logout'])->name('logout');
+        
+        // User Management Routes
+        Route::get('/users', [App\Http\Controllers\ControlPanel\UserManagementController::class, 'index'])->name('users.index');
+        Route::get('/users/create', [App\Http\Controllers\ControlPanel\UserManagementController::class, 'create'])->name('users.create');
+        Route::post('/users', [App\Http\Controllers\ControlPanel\UserManagementController::class, 'store'])->name('users.store');
+        Route::get('/users/{user}/edit', [App\Http\Controllers\ControlPanel\UserManagementController::class, 'edit'])->name('users.edit');
+        Route::put('/users/{user}', [App\Http\Controllers\ControlPanel\UserManagementController::class, 'update'])->name('users.update');
+        Route::delete('/users/{user}', [App\Http\Controllers\ControlPanel\UserManagementController::class, 'destroy'])->name('users.destroy');
+        
+        // Purchase History Routes
+        Route::get('/purchase-history', [App\Http\Controllers\ControlPanel\PurchaseHistoryController::class, 'index'])->name('purchase-history.index');
+        Route::get('/purchase-history/{order}', [App\Http\Controllers\ControlPanel\PurchaseHistoryController::class, 'show'])->name('purchase-history.show');
+        Route::put('/purchase-history/{order}/status', [App\Http\Controllers\ControlPanel\PurchaseHistoryController::class, 'updateStatus'])->name('purchase-history.update-status');
+        Route::get('/purchase-history/export', [App\Http\Controllers\ControlPanel\PurchaseHistoryController::class, 'export'])->name('purchase-history.export');
+        
+        // Reports Routes
+        Route::get('/reports', [App\Http\Controllers\ControlPanel\ReportsController::class, 'index'])->name('reports.index');
+        Route::get('/reports/export', [App\Http\Controllers\ControlPanel\ReportsController::class, 'export'])->name('reports.export');
     });
 });
 

@@ -36,7 +36,7 @@ return [
     ],
 
     'medanpedia' => [
-        'api_key' => env('MEDANPEDIA_APIKEY'),
+        'api_key' => env('MEDANPEDIA_API_KEY'),
         'api_id' => env('MEDANPEDIA_API_ID'),
     ],
 

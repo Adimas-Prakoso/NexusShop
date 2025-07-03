@@ -39,6 +39,52 @@ class SecurityMiddleware
         $path = $request->path();
         $userAgent = $request->userAgent() ?? '';
         
+        // Whitelist legitimate routes that might get falsely flagged
+        $whitelistedPaths = [
+            'products/social/instagram',
+            'products/social/facebook',
+            'products/social/twitter',
+            'products/social/youtube',
+            'products/social/tiktok',
+            'products/social/telegram',
+            'products/social/linkedin',
+            'products/social/spotify',
+            'products/social/soundcloud',
+            'products/social/twitch',
+            'products/social/discord',
+            'products/social/reddit',
+        ];
+
+        // If path is in whitelist, it's not suspicious
+        foreach ($whitelistedPaths as $whitelistedPath) {
+            if (str_starts_with($path, $whitelistedPath)) {
+                return false;
+            }
+        }
+        
+        // Whitelist order-related paths using regex pattern matching
+        if (preg_match('#^order/ORD-[A-Z0-9]+(/payment|/status|/check-status|/mark-as-paid)?$#', $path)) {
+            return false;
+        }
+        
+        // Whitelist other application routes
+        $otherSafePaths = [
+            'order/create',
+            'order/store',
+            'profile',
+            'login',
+            'register',
+            'logout',
+            'products',
+            'tos',
+        ];
+        
+        foreach ($otherSafePaths as $safePath) {
+            if (str_starts_with($path, $safePath)) {
+                return false;
+            }
+        }
+        
         // List of suspicious paths commonly scanned by bots
         $suspiciousPaths = [
             // WordPress related
